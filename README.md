@@ -14,13 +14,6 @@
 
 ---
 
-**TRƯỜNG ĐẠI HỌC BÁCH KHOA - ĐẠI HỌC ĐÀ NẴNG**  
-**KHOA CÔNG NGHỆ THÔNG TIN**  
-*Đồ án chuyên ngành PBL6 (Tháng 09/2026 – Tháng 11/2026)*
-
-</div>
-
----
 
 ## 💡 1. GIỚI THIỆU Ý TƯỞNG CỐT LÕI
 
