@@ -1,0 +1,10 @@
+{
+  "description": "Enhance your presentation skills with AI-driven feedback on eye contact, speech rate, and body language, tailored for students and professionals.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

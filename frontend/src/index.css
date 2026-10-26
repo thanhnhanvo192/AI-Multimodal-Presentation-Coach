@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Brand and surfaces from AI_Coach_Frontend_Design_Rules.md */
+  --color-primary: #276749;
+  --color-primary-hover: #1F553C;
+  --color-primary-soft: #E8F1EB;
+  --color-primary-border: #D4E5D9;
+
+  --color-app-bg: #F5F7F6;
+  --color-surface: #FFFFFF;
+  --color-main-text: #24312B;
+  --color-muted-text: #69766F;
+  --color-border-subtle: #DCE5DF;
+
+  /* Status */
+  --color-status-success: #276749;
+  --color-status-warning: #B7791F;
+  --color-status-danger: #C24141;
+
+  /* Flat UI Design System: Neutralize all shadow tokens */
+  --shadow-none: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 0 #0000;
+  --shadow-xl: 0 0 #0000;
+  --shadow-2xl: 0 0 #0000;
+  --shadow-inner: 0 0 #0000;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--color-app-bg);
+  color: var(--color-main-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── Completely Eliminate All Box Shadows (Flat UI Design) ── */
+*,
+*::before,
+*::after,
+*:hover,
+*:focus,
+*:active {
+  box-shadow: none !important;
+}
+
+/* ── Global micro-interaction primitives ──────────────────── */
+
+/* Primary button transition */
+.btn-primary {
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.btn-primary:active {
+  transform: scale(0.99);
+}
+
+/* Secondary / ghost button */
+.btn-secondary {
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.btn-secondary:active {
+  transform: scale(0.99);
+}
+
+/* Subtle card hover (clean flat border transition only) */
+.card-hover {
+  transition: border-color 0.15s ease-in-out;
+}
+
+.card-hover:hover {
+  border-color: #276749;
+  box-shadow: none !important;
+}
+
+/* Sidebar nav link */
+.nav-link {
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+/* Slide-up-fade-in toast / badge */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-enter {
+  animation: slideUpFade 0.25s ease-out forwards;
+}
+
+/* Fade-in tooltip */
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.tooltip-fade {
+  animation: tooltipFade 0.18s ease-out forwards;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  opacity: 0;
+}
