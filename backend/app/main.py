@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine, Base
+from app.core.seeder import seed_initial_users
 from app.api.v1.router import api_router
 
 @asynccontextmanager
@@ -16,6 +17,10 @@ async def lifespan(app: FastAPI):
     
     # Ensure upload directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+
+    # Seed initial demo accounts
+    await seed_initial_users()
+
     yield
     # Shutdown
     await engine.dispose()
