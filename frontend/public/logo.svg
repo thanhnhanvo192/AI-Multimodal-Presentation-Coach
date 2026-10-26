@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 64" width="500" height="128">
+  <defs>
+    <linearGradient id="gb" x1="0" y1="1" x2="0.4" y2="0">
+      <stop offset="0" stop-color="#1F8A5B"/>
+      <stop offset="0.55" stop-color="#2DD4A0"/>
+      <stop offset="1" stop-color="#22C3E6"/>
+    </linearGradient>
+    <linearGradient id="gt2" gradientUnits="userSpaceOnUse" x1="128" y1="50" x2="240" y2="16">
+      <stop offset="0" stop-color="#1F8A5B"/>
+      <stop offset="0.6" stop-color="#27C79A"/>
+      <stop offset="1" stop-color="#22C3E6"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(6 0) skewX(-8)" fill="url(#gb)">
+    <rect x="4" y="44" width="10" height="14" rx="5"/>
+    <rect x="18" y="34" width="10" height="24" rx="5"/>
+    <rect x="32" y="22" width="10" height="36" rx="5"/>
+    <rect x="46" y="16" width="10" height="42" rx="5"/>
+    <circle cx="51" cy="6" r="5"/>
+  </g>
+  <text x="78" y="43" font-family="Poppins, Nunito, 'Segoe UI', Arial, sans-serif" font-size="30" font-weight="800" fill="#14352A" letter-spacing="-0.5">AI <tspan fill="url(#gt2)">Coach</tspan></text>
+</svg>
