@@ -1,0 +1,40 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Secrets & Environment variables
+.env
+.env.local
+
+# Storage & Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Others
+generate_docx.py

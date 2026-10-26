@@ -1,0 +1,9 @@
+{
+  "total_score": 85,
+  "radar_scores": { "eye_contact": 80, "body_language": 75, "speech_rate": 90, "pitch": 85, "content": 95 },
+  "timeline_errors": [
+    { "timestamp": 45.5, "type": "EYE_CONTACT_LOST", "message": "Mất giao tiếp ánh mắt trong 4s" },
+    { "timestamp": 80.0, "type": "FILLER_WORD", "message": "Dùng từ đệm 'ừm'" }
+  ],
+  "ai_feedback": { "strengths": ["..."], "weaknesses": ["..."], "action_items": ["..."] }
+}
