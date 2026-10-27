@@ -184,9 +184,6 @@ export default function DashboardPage({
                 </h1>
                 <Badge variant="primary">Kỳ học 2026</Badge>
               </div>
-              <p className="text-[12px] text-[#69766F] mt-0.5">
-                Chào mừng bạn trở lại! Dưới đây là tổng hợp tiến độ và kỹ năng thuyết trình đa phương thức
-              </p>
             </div>
 
             {/* Quick Actions */}

@@ -251,9 +251,6 @@ export default function SettingsPage({ onNav, userRole }: SettingsPageProps) {
             <h1 className="text-[17px] font-bold text-[#24312B] tracking-tight leading-tight">
               Cài đặt tài khoản
             </h1>
-            <p className="text-[12px] text-[#69766F]">
-              Quản lý thông tin hồ sơ và tùy chọn bảo mật cá nhân
-            </p>
           </div>
         </header>
 

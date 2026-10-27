@@ -92,9 +92,6 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
             <h1 className="text-[17px] font-bold text-[#24312B] tracking-tight leading-tight">
               Tải lên video thuyết trình
             </h1>
-            <p className="text-[12px] text-[#69766F]">
-              Tải video đã quay để hệ thống AI phân tích đa phương thức
-            </p>
           </div>
 
           {/* Clean Step Indicator */}

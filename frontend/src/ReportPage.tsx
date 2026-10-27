@@ -523,7 +523,6 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
             <Card className="p-4 space-y-2 border-l-4 border-l-[#276749]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">🌟</span>
                   <span className="text-[12px] font-bold text-[#24312B] uppercase tracking-wider">
                     2. Những điểm làm tốt
                   </span>
@@ -543,7 +542,6 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
             <Card className="p-4 space-y-2 border-l-4 border-l-[#B7791F]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">⚠️</span>
                   <span className="text-[12px] font-bold text-[#24312B] uppercase tracking-wider">
                     3. Những điểm cần cải thiện
                   </span>
@@ -606,12 +604,10 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
             <Card className="p-4 space-y-2 border-l-4 border-l-[#276749]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">🎯</span>
                   <span className="text-[12px] font-bold text-[#24312B] uppercase tracking-wider">
                     5. Khuyến nghị luyện tập tiếp theo
                   </span>
                 </div>
-                <Badge variant="primary">Kế hoạch rèn luyện</Badge>
               </div>
 
               <p className="text-[12.5px] font-semibold text-[#24312B]">

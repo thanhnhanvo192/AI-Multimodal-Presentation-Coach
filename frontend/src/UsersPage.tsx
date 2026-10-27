@@ -154,9 +154,6 @@ export default function UsersPage({ onNav }: UsersPageProps) {
             <h1 className="text-[17px] font-bold text-[#24312B] tracking-tight leading-tight">
               Quản lý người dùng
             </h1>
-            <p className="text-[12px] text-[#69766F]">
-              Danh sách tài khoản sinh viên và quyền truy cập hệ thống
-            </p>
           </div>
 
           {/* Search Box */}

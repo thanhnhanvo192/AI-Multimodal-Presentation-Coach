@@ -538,8 +538,8 @@ export default function AdminLogsPage({ onNav }: AdminLogsPageProps) {
                       <th className="px-4 py-3">Mức độ</th>
                       <th className="px-4 py-3">Dịch vụ</th>
                       <th className="px-3 py-3">Mã HTTP</th>
-                      <th className="px-5 py-3">Nội dung sự kiện (Message)</th>
-                      <th className="px-4 py-3 text-right">Chi tiết</th>
+                      <th className="px-4 py-3">Nội dung sự kiện (Message)</th>
+                      <th className="px-4 pr-4 py-3 text-center">Chi tiết</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#DCE5DF]">
@@ -588,7 +588,7 @@ export default function AdminLogsPage({ onNav }: AdminLogsPageProps) {
                         </td>
 
                         {/* Message */}
-                        <td className="px-5 py-3 max-w-md">
+                        <td className="px-4 py-3 max-w-xs">
                           <p className="text-[#24312B] truncate font-medium">
                             {log.message}
                           </p>
@@ -600,7 +600,7 @@ export default function AdminLogsPage({ onNav }: AdminLogsPageProps) {
                         </td>
 
                         {/* Action */}
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <td className="px-4 pr-4 py-3 text-center whitespace-nowrap">
                           <Button
                             variant="ghost"
                             size="sm"

@@ -192,9 +192,6 @@ export default function AdminDashboardPage({ onNav }: AdminDashboardPageProps) {
                 </h1>
                 <Badge variant="primary">Kỳ 2026</Badge>
               </div>
-              <p className="text-[12px] text-[#69766F] mt-0.5">
-                Tổng hợp hoạt động rèn luyện thuyết trình của sinh viên và vận hành hệ thống AI Coach
-              </p>
             </div>
 
             {/* Quick Actions */}

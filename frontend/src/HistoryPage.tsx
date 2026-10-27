@@ -60,9 +60,6 @@ export default function HistoryPage({
                 </h1>
                 <Badge variant="neutral">Tổng số: {sessions.length} phiên</Badge>
               </div>
-              <p className="text-[12px] text-[#69766F] mt-0.5">
-                Rà soát và truy cập báo cáo đánh giá chi tiết theo từng phiên thuyết trình
-              </p>
             </div>
             <Button
               variant="primary"
