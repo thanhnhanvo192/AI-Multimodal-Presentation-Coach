@@ -27,7 +27,7 @@ class Presentation(Base):
     status: Mapped[PresentationStatus] = mapped_column(Enum(PresentationStatus), default=PresentationStatus.PENDING)
     progress_percentage: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[str] = mapped_column(String(512), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User"] = relationship("User", back_populates="presentations")
     analysis_result: Mapped["AnalysisResult"] = relationship("AnalysisResult", back_populates="presentation", uselist=False, cascade="all, delete-orphan")
@@ -47,6 +47,6 @@ class AnalysisResult(Base):
     transcript: Mapped[dict] = mapped_column(JSON, default=dict)         # {full_text, words: [{word, start, end, is_filler}]}
     ai_feedback: Mapped[dict] = mapped_column(JSON, default=dict)        # {strengths: [], weaknesses: [], action_items: []}
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     presentation: Mapped["Presentation"] = relationship("Presentation", back_populates="analysis_result")

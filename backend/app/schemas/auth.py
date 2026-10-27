@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: Optional[str] = None
+    role: Optional[str] = "student"
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -14,6 +15,8 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     full_name: Optional[str] = None
+    role: str = "student"
+    avatar_text: Optional[str] = None
     is_active: bool
 
     class Config:
@@ -22,6 +25,7 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user: Optional[UserResponse] = None
 
 class TokenData(BaseModel):
     email: Optional[str] = None

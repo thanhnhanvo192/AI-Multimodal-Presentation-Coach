@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Badge, BrandLogo } from "./components/common";
+import { useAuth } from "./context/AuthContext";
 
 function EyeOpenIcon() {
   return (
@@ -66,6 +67,7 @@ export default function SignUpPage({
   onBack,
   onLogin,
 }: SignUpPageProps) {
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [name, setName] = useState("");
@@ -75,12 +77,13 @@ export default function SignUpPage({
   const [agreeTerms, setAgreeTerms] = useState(true);
 
   const [formError, setFormError] = useState<string | null>(null);
-  const [demoNotice, setDemoNotice] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    setDemoNotice(null);
+    setSuccessMessage(null);
 
     // Validation
     if (!name.trim()) {
@@ -104,10 +107,15 @@ export default function SignUpPage({
       return;
     }
 
-    // Do NOT automatically grant a session!
-    setDemoNotice(
-      "Chức năng đăng ký tài khoản mới chưa khả dụng ở bản Demo Frontend (chờ kết nối Backend). Vui lòng quay lại màn hình Đăng nhập để sử dụng các tài khoản demo được cấp sẵn."
-    );
+    setIsSubmitting(true);
+    const result = await register(email, password, name);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setSuccessMessage("Đăng ký tài khoản thành công! Bạn có thể chuyển sang đăng nhập ngay bây giờ.");
+    } else {
+      setFormError(result.message || "Đăng ký không thành công. Vui lòng thử lại.");
+    }
   }
 
   return (
@@ -182,14 +190,14 @@ export default function SignUpPage({
             </p>
           </div>
 
-          {/* Demo notice banner */}
-          {demoNotice && (
-            <div className="p-4 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E40AF] text-[13px] space-y-3 animate-fade-in">
+          {/* Success message banner */}
+          {successMessage && (
+            <div className="p-4 rounded-xl bg-[#E8F1EB] border border-[#D4E5D9] text-[#276749] text-[13px] space-y-3 animate-fade-in">
               <div className="flex items-start gap-2.5">
-                <svg className="w-5 h-5 flex-shrink-0 text-[#2563EB] mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                <svg className="w-5 h-5 flex-shrink-0 text-[#276749] mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
-                <div className="leading-relaxed font-medium">{demoNotice}</div>
+                <div className="leading-relaxed font-medium">{successMessage}</div>
               </div>
               <Button
                 type="button"
@@ -198,7 +206,7 @@ export default function SignUpPage({
                 className="w-full justify-center"
                 onClick={onLogin}
               >
-                Đến trang Đăng nhập Demo
+                Đến trang Đăng nhập
               </Button>
             </div>
           )}
@@ -350,9 +358,9 @@ export default function SignUpPage({
               variant="primary"
               size="lg"
               className="w-full justify-center mt-2"
-              disabled={!agreeTerms}
+              disabled={!agreeTerms || isSubmitting}
             >
-              Đăng ký tài khoản
+              {isSubmitting ? "Đang xử lý..." : "Đăng ký tài khoản"}
             </Button>
           </form>
 

@@ -91,22 +91,28 @@ export default function LoginPage({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsSubmitting(true);
 
-    const result = login(email, password);
-    setIsSubmitting(false);
+    try {
+      const result = await login(email, password);
+      setIsSubmitting(false);
 
-    if (result.success && result.user) {
-      if (onLoginSuccess) {
-        onLoginSuccess(result.user.role);
+      if (result.success && result.user) {
+        if (onLoginSuccess) {
+          onLoginSuccess(result.user.role);
+        }
+      } else {
+        // Clear password field, keep email
+        setPassword("");
+        setErrorMessage(result.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
       }
-    } else {
-      // Clear password field, keep email
+    } catch {
+      setIsSubmitting(false);
       setPassword("");
-      setErrorMessage(result.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+      setErrorMessage("Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.");
     }
   };
 
