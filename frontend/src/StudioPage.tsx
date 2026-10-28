@@ -155,6 +155,7 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
   const [scrollSpeed, setScrollSpeed] = useState(2);
   const [context, setContext] = useState("Bảo vệ đề án");
   const [hasCamera, setHasCamera] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
@@ -178,9 +179,13 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
             videoPreviewRef.current.srcObject = stream;
           }
           setHasCamera(true);
+          setPermissionDenied(false);
         })
         .catch((err) => {
           console.warn("[StudioPage] Camera/Mic không khả dụng hoặc bị từ chối:", err);
+          if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+            setPermissionDenied(true);
+          }
           setHasCamera(false);
         });
     }
@@ -288,6 +293,26 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
         <div className="flex-1 flex flex-col lg:flex-row gap-4 p-5 min-h-0 overflow-y-auto lg:overflow-hidden">
           {/* ── LEFT: Camera & Controls ──────────────────────── */}
           <div className="flex-1 lg:flex-[7] min-w-0 flex flex-col gap-3.5">
+            {permissionDenied && (
+              <div className="p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] text-[12.5px] flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px]">⚠️</span>
+                  <span>
+                    Trình duyệt chưa được cấp quyền truy cập Camera/Microphone. Vui lòng bấm vào biểu tượng camera trên thanh địa chỉ để cấp quyền, hoặc chuyển sang chế độ tải file video có sẵn.
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="text-[#991B1B] border-[#FCA5A5] hover:bg-[#FEE2E2] whitespace-nowrap self-start sm:self-auto"
+                  onClick={() => onNav("upload")}
+                >
+                  Tải video có sẵn →
+                </Button>
+              </div>
+            )}
+
             {/* Camera Viewport Container */}
             <div className="relative flex-1 rounded-2xl overflow-hidden bg-[#1A231F] border border-[#DCE5DF] min-h-[360px] flex flex-col">
               {/* Webcam Video / Live Preview Feed */}

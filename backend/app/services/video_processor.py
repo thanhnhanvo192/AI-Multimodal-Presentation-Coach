@@ -81,18 +81,31 @@ async def process_video_background(presentation_id: int):
                 ]
             }
 
-            analysis_result = AnalysisResult(
-                presentation_id=presentation.id,
-                total_score=87.5,
-                badge_title="Diễn giả Tự Tin",
-                radar_scores=mock_radar,
-                timeline_errors=mock_timeline,
-                audio_metrics=mock_audio,
-                transcript=mock_transcript,
-                ai_feedback=mock_feedback
+            existing_res = await session.execute(
+                select(AnalysisResult).where(AnalysisResult.presentation_id == presentation.id)
             )
+            analysis_result = existing_res.scalar_one_or_none()
 
-            session.add(analysis_result)
+            if not analysis_result:
+                analysis_result = AnalysisResult(
+                    presentation_id=presentation.id,
+                    total_score=87.5,
+                    badge_title="Diễn giả Tự Tin",
+                    radar_scores=mock_radar,
+                    timeline_errors=mock_timeline,
+                    audio_metrics=mock_audio,
+                    transcript=mock_transcript,
+                    ai_feedback=mock_feedback
+                )
+                session.add(analysis_result)
+            else:
+                analysis_result.total_score = 87.5
+                analysis_result.badge_title = "Diễn giả Tự Tin"
+                analysis_result.radar_scores = mock_radar
+                analysis_result.timeline_errors = mock_timeline
+                analysis_result.audio_metrics = mock_audio
+                analysis_result.transcript = mock_transcript
+                analysis_result.ai_feedback = mock_feedback
 
             presentation.status = PresentationStatus.COMPLETED
             presentation.progress_percentage = 100

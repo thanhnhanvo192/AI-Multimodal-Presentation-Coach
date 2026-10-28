@@ -59,7 +59,7 @@ async def upload_presentation_video(
     contents = await file.read()
     if len(contents) > settings.MAX_FILE_SIZE_MB * 1024 * 1024:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"Kích thước file vượt quá giới hạn tối đa {settings.MAX_FILE_SIZE_MB}MB"
         )
 

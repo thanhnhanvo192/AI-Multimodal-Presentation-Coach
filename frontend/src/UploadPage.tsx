@@ -60,6 +60,10 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
     setDragging(false);
     const f = e.dataTransfer.files[0];
     if (f) {
+      if (f.size > 100 * 1024 * 1024) {
+        setErrorMessage("Dung lượng file vượt quá giới hạn cho phép (tối đa 100MB). Vui lòng chọn hoặc nén video nhỏ hơn.");
+        return;
+      }
       setRawFile(f);
       setFile({ name: f.name, size: `${(f.size / 1024 / 1024).toFixed(1)} MB` });
       setState("selected");
@@ -218,6 +222,10 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) {
+                  if (f.size > 100 * 1024 * 1024) {
+                    setErrorMessage("Dung lượng file vượt quá giới hạn cho phép (tối đa 100MB). Vui lòng chọn hoặc nén video nhỏ hơn.");
+                    return;
+                  }
                   setRawFile(f);
                   setFile({
                     name: f.name,

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 
 class UserCreate(BaseModel):
@@ -19,8 +19,7 @@ class UserResponse(BaseModel):
     avatar_text: Optional[str] = None
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     access_token: str

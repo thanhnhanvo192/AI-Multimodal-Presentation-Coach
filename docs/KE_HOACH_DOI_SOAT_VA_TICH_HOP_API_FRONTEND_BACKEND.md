@@ -309,7 +309,7 @@ Tạo file mới: `backend/app/api/v1/endpoints/admin.py`, bảo vệ bằng dep
                                        │
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPRINT 5: Kiểm thử Toàn diện & Tối ưu Hóa (1 - 2 ngày)                      │
+│ SPRINT 5: Kiểm thử Toàn diện & Tối ưu Hóa (ĐÃ HOÀN THÀNH - READY TO MERGE)  │
 │ • Chạy kiểm thử End-to-End từ Studio/Upload -> Analyzing -> Report.         │
 │ • Xử lý ngoại lệ mạng, file dung lượng lớn và hoàn thiện tài liệu nghiệm thu│
 └─────────────────────────────────────────────────────────────────────────────┘
