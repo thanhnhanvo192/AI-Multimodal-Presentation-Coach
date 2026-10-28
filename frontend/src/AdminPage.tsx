@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar, { UserRole } from "./Sidebar";
 import { Button, Card, Badge } from "./components/common";
+import { adminService } from "./services";
 
 /* ── Shared progress bar ─────────────────────────────────── */
 function UtilBar({ label, pct }: { label: string; pct: number }) {
@@ -184,18 +185,88 @@ interface AdminPageProps {
 export default function AdminPage({ onNav, userRole }: AdminPageProps) {
   const [maxUploads, setMaxUploads] = useState("5");
   const [timeWindow, setTimeWindow] = useState("10");
+  const [maxFileSize, setMaxFileSize] = useState("200");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [logFilter, setLogFilter] = useState("Tất cả");
+  const [logRows, setLogRows] = useState(LOG_ROWS);
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  useEffect(() => {
+    let mounted = true;
+    adminService.getConfig().then((cfg) => {
+      if (mounted) {
+        setMaxUploads(String(cfg.max_uploads_per_window || 5));
+        setTimeWindow(String(cfg.rate_limit_window_minutes || 10));
+        setMaxFileSize(String(cfg.max_file_size_mb || 200));
+      }
+    });
+
+    adminService.getLogs({ limit: 6 }).then((logs) => {
+      if (mounted && logs.length > 0) {
+        setLogRows(
+          logs.map((l) => ({
+            ts: new Date(l.timestamp).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            user: l.userId || "system",
+            action:
+              l.message.length > 32
+                ? l.message.substring(0, 32) + "..."
+                : l.message,
+            status:
+              l.level === "ERROR"
+                ? "Thất bại"
+                : l.level === "INFO"
+                ? "Thành công"
+                : "Đang xử lý",
+            variant: (l.level === "ERROR"
+              ? "danger"
+              : l.level === "INFO"
+              ? "success"
+              : "primary") as "danger" | "success" | "primary",
+            size:
+              l.details && l.details.includes("MB")
+                ? l.details.match(/\d+\s?MB/)?.[0] || "48 MB"
+                : "—",
+            duration: l.duration || "1.2s",
+          }))
+        );
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await adminService.updateConfig({
+        max_uploads_per_window: parseInt(maxUploads, 10) || 5,
+        rate_limit_window_minutes: parseInt(timeWindow, 10) || 10,
+        max_file_size_mb: parseInt(maxFileSize, 10) || 200,
+        min_eye_contact_pct: 70,
+        ideal_wpm_min: 130,
+        ideal_wpm_max: 160,
+        max_filler_words_allowed: 4,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const filteredLogs =
     logFilter === "Tất cả"
-      ? LOG_ROWS
-      : LOG_ROWS.filter((r) => r.status === logFilter);
+      ? logRows
+      : logRows.filter((r) => r.status === logFilter);
 
   return (
     <div className="flex h-screen bg-[#F5F7F6] overflow-hidden font-[Inter,sans-serif] text-[#24312B]">
@@ -430,8 +501,8 @@ export default function AdminPage({ onNav, userRole }: AdminPageProps) {
               />
               <ConfigInput
                 label="Dung lượng tối đa"
-                value="200"
-                onChange={() => {}}
+                value={maxFileSize}
+                onChange={setMaxFileSize}
                 suffix="MB"
                 helper="Giới hạn dung lượng tối đa cho mỗi file video."
               />

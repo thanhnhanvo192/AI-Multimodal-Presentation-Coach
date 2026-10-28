@@ -301,7 +301,7 @@ Tạo file mới: `backend/app/api/v1/endpoints/admin.py`, bảo vệ bằng dep
                                        │
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPRINT 4: Module Quản trị viên (Admin Management) (2 - 3 ngày)              │
+│ SPRINT 4: Module Quản trị viên (Admin Management) (ĐÃ HOÀN THÀNH - READY TO MERGE) │
 │ • Backend: Xây dựng endpoints/admin.py (KPIs, Users, Config, Logs).         │
 │ • Frontend: Viết adminService.ts.                                           │
 │ • Ghép nối AdminDashboardPage, UsersPage (Ban/Unban), AdminPage, LogsPage.  │

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { User, UserStatus as Status } from "./types";
 import { SEED_USERS } from "./mocks/mockUsers";
 import { Button, Card } from "./components/common";
+import { adminService } from "./services";
 
 const PAGE_SIZE = 10;
 const TOTAL = 150;
@@ -103,44 +104,81 @@ interface UsersPageProps {
 
 export default function UsersPage({ onNav }: UsersPageProps) {
   const [users, setUsers] = useState<User[]>(SEED_USERS);
+  const [totalCount, setTotalCount] = useState(TOTAL);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const [modal, setModal] = useState<{
     user: User;
     action: "ban" | "unban";
   } | null>(null);
 
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    adminService
+      .getUsers({
+        skip: (page - 1) * PAGE_SIZE,
+        limit: PAGE_SIZE,
+        search: search.trim() || undefined,
+      })
+      .then((res) => {
+        if (mounted) {
+          setUsers(
+            res.items.map((it) => ({
+              id: it.id,
+              name: it.name,
+              email: it.email,
+              sessions: it.sessions_count,
+              status: it.status,
+              role: (it.role as any) || "student",
+            }))
+          );
+          setTotalCount(res.total);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [page, search]);
+
   function showToast(msg: string) {
     setToast({ msg, key: Date.now() });
     setTimeout(() => setToast(null), 3200);
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!modal) return;
     const { user, action } = modal;
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id
-          ? { ...u, status: action === "ban" ? "banned" : "active" }
-          : u
-      )
-    );
-    showToast(
-      action === "ban"
-        ? `Đã khóa tài khoản ${user.name}.`
-        : `Đã mở khóa tài khoản ${user.name}.`
-    );
-    setModal(null);
+    const targetStatus = action === "ban" ? "banned" : "active";
+    try {
+      await adminService.updateUserStatus(user.id, targetStatus);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === user.id
+            ? { ...u, status: targetStatus }
+            : u
+        )
+      );
+      showToast(
+        action === "ban"
+          ? `Đã khóa tài khoản ${user.name}.`
+          : `Đã mở khóa tài khoản ${user.name}.`
+      );
+    } catch {
+      showToast("Thao tác thất bại, vui lòng thử lại.");
+    } finally {
+      setModal(null);
+    }
   }
 
-  const filtered = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.id.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(TOTAL / PAGE_SIZE);
+  const filtered = users;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <div className="flex h-screen bg-[#F5F7F6] overflow-hidden font-[Inter,sans-serif] text-[#24312B]">
@@ -200,7 +238,7 @@ export default function UsersPage({ onNav }: UsersPageProps) {
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: "Tổng người dùng", value: TOTAL, sub: "+12 tuần này" },
+              { label: "Tổng người dùng", value: totalCount, sub: "+12 tuần này" },
               {
                 label: "Đang hoạt động",
                 value: users.filter((u) => u.status === "active").length,
@@ -299,7 +337,7 @@ export default function UsersPage({ onNav }: UsersPageProps) {
             {/* Pagination Footer */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-[#DCE5DF] text-[12px] text-[#69766F] bg-white">
               <span>
-                Hiển thị {filtered.length}/{TOTAL} người dùng
+                Hiển thị {filtered.length}/{totalCount} người dùng
               </span>
               <div className="flex items-center gap-1.5">
                 <Button

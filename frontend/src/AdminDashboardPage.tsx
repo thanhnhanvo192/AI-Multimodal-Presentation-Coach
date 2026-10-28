@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Button, Card, Badge } from "./components/common";
 import {
@@ -8,7 +8,8 @@ import {
   getTopicDistribution,
   getRecentAdminActivities,
 } from "./mocks/mockAdmin";
-import { ActivityDataPoint } from "./types";
+import { ActivityDataPoint, AdminKPIsResponse } from "./types";
+import { adminService } from "./services";
 
 /* ── Activity Area / Line Chart ─────────────────────────────────── */
 function ActivityChart({ data }: { data: ActivityDataPoint[] }) {
@@ -165,11 +166,34 @@ interface AdminDashboardPageProps {
 
 export default function AdminDashboardPage({ onNav }: AdminDashboardPageProps) {
   const [timeRange, setTimeRange] = useState<7 | 14>(7);
+  const [loading, setLoading] = useState(true);
+  const [kpis, setKpis] = useState<AdminKPIsResponse>(() => ({
+    ...getAdminKPIs(),
+    activity_chart_7d: ACTIVITY_7_DAYS,
+    activity_chart_14d: ACTIVITY_14_DAYS,
+    topic_distribution: getTopicDistribution(),
+    recent_activities: getRecentAdminActivities(),
+  }));
 
-  const kpis = getAdminKPIs();
-  const topics = getTopicDistribution();
-  const recentActivities = getRecentAdminActivities();
-  const activityData = timeRange === 7 ? ACTIVITY_7_DAYS : ACTIVITY_14_DAYS;
+  useEffect(() => {
+    let mounted = true;
+    adminService.getKPIs().then((res) => {
+      if (mounted) {
+        setKpis(res);
+        setLoading(false);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const activityData =
+    timeRange === 7
+      ? kpis.activity_chart_7d || ACTIVITY_7_DAYS
+      : kpis.activity_chart_14d || ACTIVITY_14_DAYS;
+  const topics = kpis.topic_distribution || getTopicDistribution();
+  const recentActivities = kpis.recent_activities || getRecentAdminActivities();
 
   const totalSessionsInRange = activityData.reduce(
     (acc, cur) => acc + cur.sessions,

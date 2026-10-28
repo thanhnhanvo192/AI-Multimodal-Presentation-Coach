@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Button, Card } from "./components/common";
 import { DEMO_SERVER_LOGS } from "./mocks/mockLogs";
 import { ServerLogItem, LogLevel } from "./types";
+import { adminService } from "./services";
 
 const PAGE_SIZE = 15;
 
@@ -225,11 +226,23 @@ export default function AdminLogsPage({ onNav }: AdminLogsPageProps) {
   const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<ServerLogItem | null>(null);
 
+  useEffect(() => {
+    let mounted = true;
+    adminService.getLogs({ limit: 100 }).then((fetchedLogs) => {
+      if (mounted && fetchedLogs.length > 0) {
+        setLogs(fetchedLogs);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // Danh sách các service có trong log
   const services = useMemo(() => {
-    const list = Array.from(new Set(DEMO_SERVER_LOGS.map((l) => l.service)));
+    const list = Array.from(new Set(logs.map((l) => l.service)));
     return ["ALL", ...list];
-  }, []);
+  }, [logs]);
 
   // Tính số lượng bản ghi theo level
   const countsByLevel = useMemo(() => {
