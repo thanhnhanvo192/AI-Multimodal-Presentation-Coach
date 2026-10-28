@@ -293,7 +293,7 @@ Tạo file mới: `backend/app/api/v1/endpoints/admin.py`, bảo vệ bằng dep
                                        │
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPRINT 3: Lịch sử & Thống kê Sinh viên (1 - 2 ngày)                         │
+│ SPRINT 3: Lịch sử & Thống kê Sinh viên (ĐÃ HOÀN THÀNH - READY TO MERGE)     │
 │ • Backend: Nâng cấp GET /presentations/history và viết /dashboard-stats.    │
 │ • Frontend: Nối API hiển thị danh sách bài nói tại HistoryPage.             │
 │ • Frontend: Nối API biểu đồ xu hướng tuần tại DashboardPage.                │

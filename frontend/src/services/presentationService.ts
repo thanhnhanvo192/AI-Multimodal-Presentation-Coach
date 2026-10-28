@@ -64,6 +64,47 @@ export interface AnalysisReportResponse {
   created_at: string;
 }
 
+export interface PresentationHistoryItem {
+  id: number;
+  title: string;
+  scenario: PresentationScenario;
+  status: PresentationStatus;
+  duration: string;
+  created_at: string;
+  total_score?: number | null;
+  eye_contact_score?: number | null;
+  wpm?: number | null;
+  filler_words_count?: number | null;
+}
+
+export interface WeeklyTrendItem {
+  label: string;
+  score: number;
+  sessions: number;
+  topSkill?: string;
+}
+
+export interface RecentSessionItem {
+  id: number;
+  title: string;
+  date: string;
+  duration?: string;
+  score: number;
+  eye_contact: number;
+  wpm: number;
+  scenario?: string;
+}
+
+export interface DashboardStatsResponse {
+  total_sessions: number;
+  average_score: number;
+  total_practice_minutes: number;
+  top_skill: string;
+  improvement: number;
+  weekly_trends: WeeklyTrendItem[];
+  recent_sessions: RecentSessionItem[];
+}
+
 export const presentationService = {
   /**
    * Tải video lên hệ thống kèm thanh tiến trình upload mạng thực tế
@@ -145,6 +186,20 @@ export const presentationService = {
   },
 
   /**
+   * Lấy danh sách lịch sử thuyết trình kèm điểm số tổng hợp
+   */
+  async getHistory(): Promise<PresentationHistoryItem[]> {
+    return apiClient.get<PresentationHistoryItem[]>("/presentations/history");
+  },
+
+  /**
+   * Lấy dữ liệu KPI tổng hợp và xu hướng tuần của sinh viên
+   */
+  async getDashboardStats(): Promise<DashboardStatsResponse> {
+    return apiClient.get<DashboardStatsResponse>("/presentations/dashboard-stats");
+  },
+
+  /**
    * Tạo đường dẫn URL đầy đủ để phát video từ backend
    */
   resolveVideoUrl(videoPathOrUrl: string): string {
@@ -158,3 +213,4 @@ export const presentationService = {
     return `${baseHost}${cleanPath}`;
   },
 };
+

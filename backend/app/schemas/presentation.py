@@ -59,3 +59,41 @@ class AnalysisReportResponse(BaseModel):
     transcript: Dict[str, Any]
     ai_feedback: AIFeedback
     created_at: datetime
+
+class PresentationHistoryItem(BaseModel):
+    id: int
+    title: str
+    scenario: PresentationScenario
+    status: PresentationStatus
+    duration: str = "04:32"
+    created_at: datetime
+    total_score: Optional[float] = None
+    eye_contact_score: Optional[float] = None
+    wpm: Optional[int] = None
+    filler_words_count: Optional[int] = None
+
+class WeeklyTrendItem(BaseModel):
+    label: str
+    score: int
+    sessions: int
+    topSkill: Optional[str] = "Giao tiếp mắt"
+
+class RecentSessionItem(BaseModel):
+    id: int
+    title: str
+    date: str
+    duration: str = "04:32"
+    score: int
+    eye_contact: int
+    wpm: int
+    scenario: Optional[str] = None
+
+class DashboardStatsResponse(BaseModel):
+    total_sessions: int
+    average_score: float
+    total_practice_minutes: int
+    top_skill: str = "Giao tiếp mắt"
+    improvement: int = 0
+    weekly_trends: List[WeeklyTrendItem]
+    recent_sessions: List[RecentSessionItem]
+

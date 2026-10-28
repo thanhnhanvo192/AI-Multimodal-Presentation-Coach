@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar, { UserRole } from "./Sidebar";
 import { CHART_DATA, getStoredSessions } from "./mocks/mockHistory";
 import { Button, Card, Badge } from "./components/common";
+import { presentationService, DashboardStatsResponse } from "./services";
 
 /* ── Standardized Clean Trend Line Chart ────────────────────────── */
+interface TrendPoint {
+  label: string;
+  score: number;
+  sessions?: number;
+  topSkill?: string;
+}
+
 function LineChart({
+  data = CHART_DATA,
   hoverIdx,
   setHoverIdx,
 }: {
+  data?: TrendPoint[];
   hoverIdx: number | null;
   setHoverIdx: (i: number | null) => void;
 }) {
+  const chartData = data && data.length > 0 ? data : CHART_DATA;
   const W = 700,
     H = 190;
   const padL = 40,
@@ -22,11 +33,11 @@ function LineChart({
 
   const minScore = 45,
     maxScore = 100;
-  const toX = (i: number) => padL + (i / (CHART_DATA.length - 1)) * chartW;
+  const toX = (i: number) => padL + (i / Math.max(1, chartData.length - 1)) * chartW;
   const toY = (v: number) =>
     padT + chartH - ((v - minScore) / (maxScore - minScore)) * chartH;
 
-  const pts = CHART_DATA.map((d, i) => ({ x: toX(i), y: toY(d.score) }));
+  const pts = chartData.map((d, i) => ({ x: toX(i), y: toY(d.score) }));
   const linePath = pts
     .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
     .join(" ");
@@ -92,7 +103,7 @@ function LineChart({
       />
 
       {/* X-axis labels + interactive markers */}
-      {CHART_DATA.map((d, i) => {
+      {chartData.map((d, i) => {
         const x = toX(i);
         const active = hoverIdx === i;
         return (
@@ -149,24 +160,76 @@ export default function DashboardPage({
   userRole,
 }: DashboardPageProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const sessions = getStoredSessions();
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const avgScore =
-    sessions.length > 0
-      ? Math.round(sessions.reduce((a, s) => a + s.score, 0) / sessions.length)
-      : 0;
+  useEffect(() => {
+    let isSubscribed = true;
+    presentationService
+      .getDashboardStats()
+      .then((data) => {
+        if (!isSubscribed) return;
+        setStats(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn("[DashboardPage] Không thể lấy stats từ API, sử dụng mock fallback:", err);
+        setLoading(false);
+      });
 
-  const totalMins = sessions.reduce((a, s) => {
-    const [m, sec] = s.duration.split(":").map(Number);
-    return a + (m || 0) + (sec || 0) / 60;
-  }, 0);
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
-  const improvement =
-    sessions.length >= 2
-      ? sessions[0].score - sessions[sessions.length - 1].score
-      : 0;
+  const mockSessions = getStoredSessions();
+  const totalSessions = stats ? stats.total_sessions : mockSessions.length;
+  const avgScore = stats
+    ? Math.round(stats.average_score)
+    : mockSessions.length > 0
+    ? Math.round(mockSessions.reduce((a, s) => a + s.score, 0) / mockSessions.length)
+    : 0;
 
-  const recentSessions = sessions.slice(0, 3);
+  const totalMins = stats
+    ? stats.total_practice_minutes
+    : mockSessions.reduce((a, s) => {
+        const [m, sec] = s.duration.split(":").map(Number);
+        return a + (m || 0) + (sec || 0) / 60;
+      }, 0);
+
+  const improvement = stats
+    ? stats.improvement
+    : mockSessions.length >= 2
+    ? mockSessions[0].score - mockSessions[mockSessions.length - 1].score
+    : 0;
+
+  const weeklyTrends =
+    stats?.weekly_trends && stats.weekly_trends.length > 0
+      ? stats.weekly_trends
+      : CHART_DATA;
+
+  const recentSessions =
+    stats?.recent_sessions && stats.recent_sessions.length > 0
+      ? stats.recent_sessions.map((r) => {
+          const scenarioMap: Record<string, string> = {
+            ACADEMIC: "Bảo vệ đề án",
+            PITCHING: "Hội thảo",
+            INTERVIEW: "Phỏng vấn việc làm",
+          };
+          return {
+            id: r.id,
+            title: r.title,
+            context: (r.scenario && scenarioMap[r.scenario]) || "Bảo vệ đề án",
+            date: r.date,
+            duration: r.duration || "04:32",
+            score: r.score,
+            eyeContact: r.eye_contact,
+            wpm: r.wpm,
+            trend: null as number | null,
+          };
+        })
+      : mockSessions.slice(0, 3);
+
 
   return (
     <div className="flex h-screen bg-[#F5F7F6] overflow-hidden font-[Inter,sans-serif] text-[#24312B]">
@@ -225,7 +288,7 @@ export default function DashboardPage({
             {[
               {
                 label: "Tổng số phiên",
-                value: String(sessions.length),
+                value: String(totalSessions),
                 sub: "Đã hoàn thành",
               },
               {
@@ -279,11 +342,11 @@ export default function DashboardPage({
               <Badge variant="success">+27 điểm trong 4 tuần</Badge>
             </div>
 
-            <LineChart hoverIdx={hoverIdx} setHoverIdx={setHoverIdx} />
+            <LineChart data={weeklyTrends} hoverIdx={hoverIdx} setHoverIdx={setHoverIdx} />
 
             {/* Week Summary Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-[#DCE5DF]">
-              {CHART_DATA.map((d, i) => (
+              {weeklyTrends.map((d, i) => (
                 <div
                   key={i}
                   className={`rounded-xl p-3 transition-colors cursor-pointer border ${

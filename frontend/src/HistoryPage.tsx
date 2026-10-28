@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar, { UserRole } from "./Sidebar";
 import { getStoredSessions } from "./mocks/mockHistory";
 import { Button, Card, Badge } from "./components/common";
+import { presentationService } from "./services";
 
 function MiniBar({ value }: { value: number }) {
   return (
@@ -12,6 +13,20 @@ function MiniBar({ value }: { value: number }) {
       />
     </div>
   );
+}
+
+interface HistorySessionItem {
+  id: string | number;
+  title: string;
+  context: string;
+  date: string;
+  duration: string;
+  score: number;
+  trend: number | null;
+  eyeContact: number;
+  wpm: number;
+  fillerWords: number;
+  status?: string;
 }
 
 interface HistoryPageProps {
@@ -27,8 +42,61 @@ export default function HistoryPage({
 }: HistoryPageProps) {
   const [activeFilter, setActiveFilter] = useState("Tất cả");
   const [expandedId, setExpandedId] = useState<string | number | null>(null);
+  const [sessions, setSessions] = useState<HistorySessionItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const sessions = getStoredSessions();
+  useEffect(() => {
+    let isSubscribed = true;
+    presentationService
+      .getHistory()
+      .then((items) => {
+        if (!isSubscribed) return;
+        if (items && items.length > 0) {
+          const mapped: HistorySessionItem[] = items.map((p, idx) => {
+            const scenarioMap: Record<string, string> = {
+              ACADEMIC: "Bảo vệ đề án",
+              PITCHING: "Hội thảo",
+              INTERVIEW: "Phỏng vấn việc làm",
+            };
+            const ctx = scenarioMap[p.scenario] || "Luyện tập tự do";
+            const dateObj = new Date(p.created_at);
+            const dateStr = !isNaN(dateObj.getTime())
+              ? `${dateObj.getDate()} Th${dateObj.getMonth() + 1}, ${dateObj.getFullYear()}`
+              : "Hôm nay";
+
+            return {
+              id: p.id,
+              title: p.title,
+              context: ctx,
+              date: dateStr,
+              duration: p.duration || "04:32",
+              score: Math.round(p.total_score || (p.status === "COMPLETED" ? 85 : 0)),
+              trend:
+                idx < items.length - 1 && p.total_score && items[idx + 1].total_score
+                  ? Math.round(p.total_score - (items[idx + 1].total_score || 0))
+                  : null,
+              eyeContact: Math.round(p.eye_contact_score || 85),
+              wpm: p.wpm || 140,
+              fillerWords: p.filler_words_count ?? 2,
+              status: p.status,
+            };
+          });
+          setSessions(mapped);
+        } else {
+          setSessions(getStoredSessions());
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn("[HistoryPage] Không thể lấy lịch sử từ API, dùng mock data:", err);
+        setSessions(getStoredSessions());
+        setLoading(false);
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, []);
 
   const filters = [
     "Tất cả",

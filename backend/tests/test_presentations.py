@@ -87,3 +87,33 @@ async def test_presentation_upload_and_status_flow():
         assert "timeline_errors" in report_data
         assert "ai_feedback" in report_data
 
+        # 8. Kiểm tra Nâng cấp Lịch sử (History) đã tích hợp kết quả điểm số
+        upgraded_history_resp = await ac.get(
+            "/api/v1/presentations/history",
+            headers=headers
+        )
+        assert upgraded_history_resp.status_code == 200
+        upgraded_items = upgraded_history_resp.json()
+        matched = next((item for item in upgraded_items if item["id"] == pres_id), None)
+        assert matched is not None
+        assert matched["status"] == "COMPLETED"
+        assert matched["total_score"] is not None
+        assert matched["eye_contact_score"] is not None
+        assert matched["wpm"] is not None
+
+        # 9. Kiểm tra Thống kê Sinh viên (Dashboard Stats)
+        stats_resp = await ac.get(
+            "/api/v1/presentations/dashboard-stats",
+            headers=headers
+        )
+        assert stats_resp.status_code == 200
+        stats_data = stats_resp.json()
+        assert "total_sessions" in stats_data
+        assert stats_data["total_sessions"] >= 1
+        assert "average_score" in stats_data
+        assert "weekly_trends" in stats_data
+        assert len(stats_data["weekly_trends"]) == 4
+        assert "recent_sessions" in stats_data
+        assert len(stats_data["recent_sessions"]) >= 1
+
+
