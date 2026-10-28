@@ -30,6 +30,7 @@ export interface DetailedSessionReport {
   };
   timelineMarkers: Array<{
     pct: number;
+    timestamp?: number;
     color: string;
     symbol: string;
     label: string;

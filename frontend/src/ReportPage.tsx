@@ -193,6 +193,9 @@ function MetricBar({
   );
 }
 
+import { useEffect, useRef } from "react";
+import { presentationService } from "./services";
+
 /* ── Main Report Page ─────────────────────────────────────── */
 interface ReportPageProps {
   onNav: (view: string) => void;
@@ -201,10 +204,190 @@ interface ReportPageProps {
 
 export default function ReportPage({ onNav, userRole }: ReportPageProps) {
   const { sessionId } = useParams<{ sessionId: string }>();
+  const [report, setReport] = useState<DetailedSessionReport | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [hoverMarker, setHoverMarker] = useState<number | null>(null);
-  const [playhead, setPlayhead] = useState(34);
+  const [playhead, setPlayhead] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(180);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const report = sessionId ? getReportBySessionId(sessionId) : null;
+  useEffect(() => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
+
+    let isSubscribed = true;
+    setLoading(true);
+
+    presentationService
+      .getReport(sessionId)
+      .then((data) => {
+        if (!isSubscribed) return;
+        const durSeconds = 180;
+        const mapped: DetailedSessionReport = {
+          sessionId: data.presentation_id,
+          title: data.title || "Bài thuyết trình",
+          date: new Date(data.created_at).toLocaleDateString("vi-VN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          duration: "03:00",
+          context: "Bảo vệ đề án",
+          overallScore: Math.round(data.total_score || 80),
+          trendScore: 3,
+          grade: (data.total_score || 80) >= 85 ? "Xuất sắc" : (data.total_score || 80) >= 70 ? "Tốt" : "Cần cải thiện",
+          gradeDescription: data.badge_title || "Diễn giả Tiềm Năng",
+          radarMetrics: {
+            wpmPercent: Math.min(100, Math.round(data.radar_scores?.speech_rate || 85)) / 100,
+            eyeContactPercent: Math.min(100, Math.round(data.radar_scores?.eye_contact || 88)) / 100,
+            emotionPercent: Math.min(100, Math.round(data.radar_scores?.pitch || 80)) / 100,
+            bodyLanguagePercent: Math.min(100, Math.round(data.radar_scores?.body_language || 82)) / 100,
+            volumePercent: Math.min(100, Math.round(data.radar_scores?.content || 90)) / 100,
+          },
+          metricBars: {
+            eyeContact: Math.round(data.radar_scores?.eye_contact || 88),
+            wpmSpeed: Math.round(data.radar_scores?.speech_rate || 85),
+            confidence: Math.round(data.radar_scores?.body_language || 82),
+            fillerWordControl: Math.max(0, 100 - (data.audio_metrics?.filler_words_count || 0) * 10),
+          },
+          rawMetrics: {
+            eyeContact: Math.round(data.radar_scores?.eye_contact || 88),
+            wpm: data.audio_metrics?.wpm || 142,
+            fillerWords: data.audio_metrics?.filler_words_count || 0,
+          },
+          timelineMarkers: (data.timeline_errors || []).map((err) => ({
+            pct: Math.min(95, Math.max(5, (err.timestamp / durSeconds) * 100)),
+            timestamp: err.timestamp,
+            color: err.type?.includes("LOST") ? "#C24141" : "#B7791F",
+            symbol: err.type?.includes("LOST") ? "⚠️" : "⚡",
+            label: err.message,
+            severity: err.type?.includes("LOST") ? "Cần lưu ý" : "Nhẹ",
+          })),
+          transcript:
+            typeof data.transcript?.full_text === "string"
+              ? data.transcript.full_text
+              : "Bản bóc băng lời nói đang được hoàn thiện...",
+          strengths: {
+            title: "Điểm mạnh",
+            description: data.ai_feedback?.strengths?.join(". ") || "Giữ vững giao tiếp mắt tốt và phong thái đĩnh đạc.",
+          },
+          improvements: {
+            title: "Cần cải thiện",
+            description: data.ai_feedback?.weaknesses?.join(". ") || "Cần điều tiết nhịp thở và giảm các khoảng dừng ngập ngừng.",
+          },
+          recommendation: {
+            title: "Khuyến nghị từ AI Coach",
+            description: data.ai_feedback?.action_items?.join(". ") || "Luyện tập ngẩng cao đầu duy trì ánh mắt ngay cả khi suy nghĩ.",
+          },
+        };
+
+        setReport(mapped);
+        if (data.video_url) {
+          setVideoUrl(presentationService.resolveVideoUrl(data.video_url));
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn("[ReportPage] Lấy báo cáo từ API không thành công, sử dụng dữ liệu mẫu:", err);
+        const fallback = getReportBySessionId(sessionId);
+        setReport(fallback || null);
+        setLoading(false);
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [sessionId]);
+
+  const formatTime = (seconds: number): string => {
+    if (!seconds || isNaN(seconds) || seconds < 0) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleSeek = (newPct: number) => {
+    setPlayhead(newPct);
+    if (videoRef.current && videoDuration > 0) {
+      const targetTime = (newPct / 100) * videoDuration;
+      videoRef.current.currentTime = targetTime;
+      setCurrentTime(targetTime);
+    }
+  };
+
+  const handleMarkerClick = (marker: { pct: number; timestamp?: number }) => {
+    if (videoRef.current) {
+      let targetTime = marker.timestamp;
+      if (targetTime === undefined) {
+        targetTime = (marker.pct / 100) * (videoDuration || 180);
+      }
+      videoRef.current.currentTime = targetTime;
+      setCurrentTime(targetTime);
+      setPlayhead(videoDuration > 0 ? (targetTime / videoDuration) * 100 : marker.pct);
+      videoRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      setPlayhead(marker.pct);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      const dur = videoRef.current.duration;
+      if (dur && !isNaN(dur) && isFinite(dur)) {
+        setVideoDuration(dur);
+      }
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const cur = videoRef.current.currentTime;
+      const dur = videoRef.current.duration || videoDuration || 180;
+      setCurrentTime(cur);
+      if (dur > 0) {
+        setPlayhead((cur / dur) * 100);
+      }
+    }
+  };
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play().catch((e) => console.warn("Video playback error:", e));
+      setIsPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const changeRate = (rate: number) => {
+    setPlaybackRate(rate);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = rate;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-[#F5F7F6] overflow-hidden font-[Inter,sans-serif] text-[#24312B]">
+        <Sidebar userRole={userRole} activeItem="history" onNav={onNav} />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-3 border-[#276749] border-t-transparent animate-spin" />
+            <p className="text-[13.5px] font-medium text-[#69766F]">Đang tải báo cáo phân tích...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   /* Trạng thái khi không tìm thấy phiên hoặc ID không hợp lệ */
   if (!report) {
@@ -304,76 +487,105 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
           <div className="flex-1 lg:flex-[6] min-w-0 flex flex-col overflow-y-auto p-5 space-y-4 border-r border-[#DCE5DF]">
             {/* Video Player Box */}
             <div
-              className="rounded-xl overflow-hidden bg-[#1A231F] border border-[#DCE5DF] relative"
+              className="rounded-xl overflow-hidden bg-[#1A231F] border border-[#DCE5DF] relative group"
               style={{ aspectRatio: "16/9" }}
             >
-              <img
-                src="https://images.unsplash.com/photo-1758876020207-67890de8aa73?w=900&h=506&fit=crop&auto=format"
-                alt="Recorded presentation session"
-                className="w-full h-full object-cover opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+              {videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="w-full h-full object-cover"
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
+                  playsInline
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-[#1A231F] text-white/70 relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1758876020207-67890de8aa73?w=900&h=506&fit=crop&auto=format"
+                    alt="Recorded presentation session"
+                    className="w-full h-full object-cover opacity-60 absolute inset-0"
+                  />
+                  <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                    </div>
+                    <span className="text-xs text-white/80 font-medium">Video lưu trữ (Mô phỏng dữ liệu)</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
               {/* Top Session Info Pill */}
               <div className="absolute top-3 left-3">
-                <span className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10">
-                  Phiên #{report.sessionId} — Video đã lưu
+                <span className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#276749] animate-pulse" />
+                  Phiên #{report.sessionId} — {videoUrl ? "Video trực tiếp" : "Video lưu trữ"}
                 </span>
               </div>
 
               {/* Top-right Duration Pill */}
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11.5px] font-mono font-medium px-2.5 py-1 rounded-md border border-white/10">
-                {report.duration}
+                {formatTime(videoDuration)}
               </div>
 
               {/* Bottom Playback Controls */}
-              <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex flex-col gap-2">
+              <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex flex-col gap-2 z-20">
                 <input
                   type="range"
                   min={0}
                   max={100}
+                  step={0.1}
                   value={playhead}
-                  onChange={(e) => setPlayhead(Number(e.target.value))}
-                  className="w-full h-1 accent-[#276749] cursor-pointer"
+                  onChange={(e) => handleSeek(Number(e.target.value))}
+                  className="w-full h-1.5 accent-[#276749] bg-white/30 rounded cursor-pointer transition-all"
+                  aria-label="Tua video"
                 />
                 <div className="flex items-center justify-between text-[12px] text-white">
                   <div className="flex items-center gap-2.5">
                     <button
                       type="button"
-                      className="w-7 h-7 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-                      aria-label="Phát video"
+                      onClick={togglePlay}
+                      className="w-8 h-8 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
+                      aria-label={isPlaying ? "Tạm dừng video" : "Phát video"}
                     >
-                      <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                        <path d="M3 2l7 4-7 4V2z" fill="white" />
-                      </svg>
+                      {isPlaying ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                          <rect x="6" y="4" width="4" height="16" />
+                          <rect x="14" y="4" width="4" height="16" />
+                        </svg>
+                      ) : (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      )}
                     </button>
                     <span className="font-mono text-white/90 text-[12px]">
-                      {`0${Math.floor((playhead / 100) * 4)}:${String(
-                        Math.floor((playhead / 100) * 60) % 60
-                      ).padStart(2, "0")}`}{" "}
-                      / {report.duration}
+                      {formatTime(currentTime)} / {formatTime(videoDuration)}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[11.5px] text-white/80">
-                    <button
-                      type="button"
-                      className="hover:text-white px-1.5 py-0.5 rounded"
-                    >
-                      0.5×
-                    </button>
-                    <button
-                      type="button"
-                      className="text-white font-semibold bg-white/20 px-1.5 py-0.5 rounded"
-                    >
-                      1×
-                    </button>
-                    <button
-                      type="button"
-                      className="hover:text-white px-1.5 py-0.5 rounded"
-                    >
-                      1.5×
-                    </button>
+                    {[0.5, 1, 1.5, 2].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => changeRate(rate)}
+                        className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                          playbackRate === rate
+                            ? "text-white font-semibold bg-[#276749]"
+                            : "hover:text-white hover:bg-white/20"
+                        }`}
+                      >
+                        {rate}×
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -392,7 +604,11 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#B7791F]" />
-                    <span>⚡ Nhẹ</span>
+                    <span>💬 Từ đệm</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
+                    <span>⚡ Nhịp điệu</span>
                   </span>
                 </div>
               </div>
@@ -401,50 +617,65 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
               <div className="relative h-7 flex items-center">
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-[#DCE5DF] rounded-full" />
                 <div
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 bg-[#E8F1EB] rounded-full"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 bg-[#276749] rounded-full transition-all duration-100"
                   style={{ width: `${playhead}%` }}
                 />
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#276749] border-2 border-white z-20"
+                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#276749] border-2 border-white shadow z-20 transition-all duration-100"
                   style={{ left: `calc(${playhead}% - 7px)` }}
                 />
 
                 {report.timelineMarkers.map((m, i) => (
-                  <div
+                  <button
                     key={i}
-                    className="absolute top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                    style={{ left: `calc(${m.pct}% - 6px)` }}
+                    type="button"
+                    onClick={() => handleMarkerClick(m)}
+                    className="absolute top-1/2 -translate-y-1/2 z-10 cursor-pointer focus:outline-none group/marker"
+                    style={{ left: `calc(${m.pct}% - 7px)` }}
                     onMouseEnter={() => setHoverMarker(i)}
                     onMouseLeave={() => setHoverMarker(null)}
+                    aria-label={`Chuyển đến mốc: ${m.label}`}
                   >
                     <div
-                      className="w-3.5 h-3.5 rounded-full border-2 border-white"
+                      className="w-3.5 h-3.5 rounded-full border-2 border-white shadow transition-transform hover:scale-125"
                       style={{ background: m.color }}
                     />
                     {hoverMarker === i && (
-                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#24312B] text-white text-[11px] font-medium px-2.5 py-1 rounded-md whitespace-nowrap z-30 pointer-events-none">
-                        {m.symbol} {m.severity}: {m.label}
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#24312B] text-white text-[11px] font-medium px-2.5 py-1 rounded-md whitespace-nowrap z-30 pointer-events-none shadow-lg">
+                        {m.symbol} {m.severity}: {m.label} ({formatTime(m.timestamp ?? (m.pct / 100) * videoDuration)})
                       </div>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
 
               {/* Marker Legend Detailed List */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-[#DCE5DF]">
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-[#DCE5DF]">
                 {report.timelineMarkers.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-[12px]">
-                    <span className="text-[12px]">{m.symbol}</span>
-                    <span
-                      className={`font-semibold ${
-                        m.severity === "Cần lưu ý"
-                          ? "text-[#C24141]"
-                          : "text-[#B7791F]"
-                      }`}
-                    >
-                      {m.severity}:
+                  <div
+                    key={i}
+                    onClick={() => handleMarkerClick(m)}
+                    className="flex items-center justify-between text-[12px] p-2 rounded-lg hover:bg-[#F5F7F6] cursor-pointer transition-colors group/item"
+                    title="Nhấn để tua video đến thời điểm này"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[12px]">{m.symbol}</span>
+                      <span
+                        className={`font-semibold ${
+                          m.severity === "Cần lưu ý"
+                            ? "text-[#C24141]"
+                            : m.severity === "Từ đệm"
+                            ? "text-[#B7791F]"
+                            : "text-[#3B82F6]"
+                        }`}
+                      >
+                        {m.severity}:
+                      </span>
+                      <span className="text-[#24312B]">{m.label}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-[#69766F] group-hover/item:text-[#276749] flex items-center gap-1 font-medium bg-[#E8F1EB]/50 group-hover/item:bg-[#E8F1EB] px-2 py-0.5 rounded">
+                      ▶ {formatTime(m.timestamp ?? (m.pct / 100) * videoDuration)}
                     </span>
-                    <span className="text-[#24312B]">{m.label}</span>
                   </div>
                 ))}
               </div>

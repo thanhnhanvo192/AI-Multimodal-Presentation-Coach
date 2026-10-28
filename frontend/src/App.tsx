@@ -137,7 +137,11 @@ function AppRoutes() {
         path="/studio"
         element={
           <StudentRoute>
-            <StudioPage onNav={handleNav} onAnalyze={() => navigate("/analyzing")} userRole="student" />
+            <StudioPage
+              onNav={handleNav}
+              onAnalyze={(id) => navigate(id ? `/analyzing?id=${id}` : "/analyzing")}
+              userRole="student"
+            />
           </StudentRoute>
         }
       />
@@ -145,7 +149,11 @@ function AppRoutes() {
         path="/upload"
         element={
           <StudentRoute>
-            <UploadPage onNav={handleNav} onAnalyze={() => navigate("/analyzing")} userRole="student" />
+            <UploadPage
+              onNav={handleNav}
+              onAnalyze={(id) => navigate(id ? `/analyzing?id=${id}` : "/analyzing")}
+              userRole="student"
+            />
           </StudentRoute>
         }
       />

@@ -32,12 +32,17 @@ async def upload_presentation_video(
     db: AsyncSession = Depends(get_db)
 ):
     # Validate File Extension
-    file_ext = os.path.splitext(file.filename)[1].lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Định dạng file không hỗ trợ ({file_ext}). Chỉ chấp nhận: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
+    file_ext = os.path.splitext(file.filename or "")[1].lower()
+    if not file_ext or file_ext not in ALLOWED_EXTENSIONS:
+        if file.content_type and "webm" in file.content_type:
+            file_ext = ".webm"
+        elif file.content_type and "mp4" in file.content_type:
+            file_ext = ".mp4"
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Định dạng file không hỗ trợ ({file_ext}). Chỉ chấp nhận: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
 
     # Ensure Upload Directory Exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)

@@ -23,9 +23,17 @@ const UPLOAD_TIPS = [
   "Nền phía sau đơn giản giúp MediaPipe theo dõi cử chỉ ngôn ngữ cơ thể chính xác hơn.",
 ];
 
+import { presentationService, PresentationScenario } from "./services";
+
+function toScenario(ctx: string): PresentationScenario {
+  if (ctx.includes("Phỏng vấn")) return "INTERVIEW";
+  if (ctx.includes("Hội thảo") || ctx.includes("Thuyết phục") || ctx.includes("Pitching")) return "PITCHING";
+  return "ACADEMIC";
+}
+
 interface UploadPageProps {
   onNav: (view: string) => void;
-  onAnalyze: () => void;
+  onAnalyze: (id?: number | string) => void;
   userRole: UserRole;
 }
 
@@ -34,6 +42,8 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
   const [dragging, setDragging] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [file, setFile] = useState<FileInfo>(MOCK_FILE);
+  const [rawFile, setRawFile] = useState<File | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [context, setContext] = useState("Bảo vệ đề án");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -50,15 +60,44 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
     setDragging(false);
     const f = e.dataTransfer.files[0];
     if (f) {
+      setRawFile(f);
       setFile({ name: f.name, size: `${(f.size / 1024 / 1024).toFixed(1)} MB` });
       setState("selected");
+      setErrorMessage(null);
     }
   }, []);
 
-  /* Simulate upload */
-  function handleSend() {
+  /* Upload handler calling backend API */
+  async function handleSend() {
     setState("uploading");
     setUploadPct(0);
+    setErrorMessage(null);
+
+    const scenario = toScenario(context);
+    const title = file.name ? file.name.replace(/\.[^/.]+$/, "") : "Bài thuyết trình";
+
+    if (rawFile) {
+      try {
+        const res = await presentationService.uploadVideo(
+          rawFile,
+          title,
+          scenario,
+          (pct) => setUploadPct(pct)
+        );
+        setState("done");
+        setTimeout(() => onAnalyze(res.id), 600);
+        return;
+      } catch (err: any) {
+        console.warn("[UploadPage] Backend upload error, using fallback simulation:", err);
+        if (err.status && err.status >= 400 && err.status < 500) {
+          setState("selected");
+          setErrorMessage(err.message || "Không thể tải lên file này.");
+          return;
+        }
+      }
+    }
+
+    // Fallback simulation (for mock preset or when backend is unreachable)
     let pct = 0;
     const id = setInterval(() => {
       pct += Math.floor(Math.random() * 8 + 4);
@@ -69,12 +108,14 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
         setTimeout(() => onAnalyze(), 800);
       }
       setUploadPct(pct);
-    }, 180);
+    }, 150);
   }
 
   function handleRemove() {
+    setRawFile(null);
     setState("idle");
     setUploadPct(0);
+    setErrorMessage(null);
   }
 
   const isUploading = state === "uploading";
@@ -177,14 +218,23 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) {
+                  setRawFile(f);
                   setFile({
                     name: f.name,
                     size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
                   });
                   setState("selected");
+                  setErrorMessage(null);
                 }
               }}
             />
+
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] text-[13px] flex items-center gap-2.5 animate-fade-in">
+                <span>⚠️</span>
+                <span className="font-medium">{errorMessage}</span>
+              </div>
+            )}
 
             {/* Drop Zone Area */}
             <div

@@ -135,19 +135,120 @@ Giải pháp của chúng em sử dụng MediaPipe để theo dõi khuôn mặt 
 
 Chúng em tin rằng với việc luyện tập nhất quán và dựa trên dữ liệu, mỗi sinh viên đều có thể bước vào buổi bảo vệ tiếp theo với sự chuẩn bị và tự tin hoàn toàn. Kính mời thầy cô xem demo.`;
 
+import { presentationService, PresentationScenario } from "./services";
+
+function toScenario(ctx: string): PresentationScenario {
+  if (ctx.includes("Phỏng vấn")) return "INTERVIEW";
+  if (ctx.includes("Hội thảo") || ctx.includes("Thuyết phục") || ctx.includes("Pitching")) return "PITCHING";
+  return "ACADEMIC";
+}
+
 interface StudioPageProps {
   onNav: (view: string) => void;
-  onAnalyze?: () => void;
+  onAnalyze?: (id?: number | string) => void;
   userRole: UserRole;
 }
 
 export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPageProps) {
-  const [recording, setRecording] = useState(true);
+  const [recording, setRecording] = useState(false);
   const [textSize, setTextSize] = useState(14);
   const [scrollSpeed, setScrollSpeed] = useState(2);
   const [context, setContext] = useState("Bảo vệ đề án");
+  const [hasCamera, setHasCamera] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+
   const timer = useTimer(recording);
   const teleRef = useRef<HTMLTextAreaElement>(null);
+
+  // Khởi tạo luồng Webcam & Microphone thực tế
+  useEffect(() => {
+    let active = true;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
+        .then((stream) => {
+          if (!active) return;
+          mediaStreamRef.current = stream;
+          if (videoPreviewRef.current) {
+            videoPreviewRef.current.srcObject = stream;
+          }
+          setHasCamera(true);
+        })
+        .catch((err) => {
+          console.warn("[StudioPage] Camera/Mic không khả dụng hoặc bị từ chối:", err);
+          setHasCamera(false);
+        });
+    }
+
+    return () => {
+      active = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  // Bắt đầu / Dừng ghi hình bằng MediaRecorder
+  const toggleRecording = () => {
+    if (!recording) {
+      recordedChunksRef.current = [];
+      if (mediaStreamRef.current) {
+        try {
+          const recorder = new MediaRecorder(mediaStreamRef.current, { mimeType: "video/webm" });
+          recorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              recordedChunksRef.current.push(event.data);
+            }
+          };
+          recorder.start(500);
+          mediaRecorderRef.current = recorder;
+        } catch (e) {
+          console.warn("[StudioPage] MediaRecorder khởi tạo không thành công:", e);
+        }
+      }
+      setRecording(true);
+    } else {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      setRecording(false);
+    }
+  };
+
+  // Gửi video đã quay lên Backend để phân tích
+  const handleSendForAnalysis = async () => {
+    if (isUploading) return;
+    setIsUploading(true);
+
+    if (recording && mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+
+    const chunks = recordedChunksRef.current;
+    if (chunks.length > 0) {
+      const blob = new Blob(chunks, { type: "video/webm" });
+      try {
+        const title = `Ghi hình Studio (${context})`;
+        const res = await presentationService.uploadVideo(blob, title, toScenario(context));
+        setIsUploading(false);
+        onAnalyze?.(res.id);
+        return;
+      } catch (err) {
+        console.warn("[StudioPage] Lỗi upload video từ webcam, sử dụng fallback:", err);
+      }
+    }
+
+    // Fallback simulation nếu không có video thật hoặc backend offline
+    setIsUploading(false);
+    onAnalyze?.();
+  };
 
   return (
     <div className="flex h-screen bg-[#F5F7F6] overflow-hidden font-[Inter,sans-serif] text-[#24312B]">
@@ -166,12 +267,12 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
                 Đang ghi hình
               </Badge>
             ) : (
-              <Badge variant="neutral">Tạm dừng</Badge>
+              <Badge variant="neutral">Sẵn sàng</Badge>
             )}
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-[12px] text-[#69766F] font-medium">Phiên #47</span>
+            <span className="text-[12px] text-[#69766F] font-medium">Phiên luyện tập</span>
             <div className="w-px h-3.5 bg-[#DCE5DF]" />
             <span className="text-[12px] text-[#69766F]">
               {new Date().toLocaleDateString("vi-VN", {
@@ -190,11 +291,21 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
             {/* Camera Viewport Container */}
             <div className="relative flex-1 rounded-2xl overflow-hidden bg-[#1A231F] border border-[#DCE5DF] min-h-[360px] flex flex-col">
               {/* Webcam Video / Live Preview Feed */}
-              <img
-                src="https://images.unsplash.com/photo-1758876020207-67890de8aa73?w=1200&h=900&fit=crop&auto=format"
-                alt="Live webcam preview — presenter"
-                className="w-full h-full object-cover"
-              />
+              {hasCamera ? (
+                <video
+                  ref={videoPreviewRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover -scale-x-100"
+                />
+              ) : (
+                <img
+                  src="https://images.unsplash.com/photo-1758876020207-67890de8aa73?w=1200&h=900&fit=crop&auto=format"
+                  alt="Live webcam preview — presenter"
+                  className="w-full h-full object-cover"
+                />
+              )}
 
               {/* Subtle top & bottom vignette */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25 pointer-events-none" />
@@ -217,7 +328,7 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
                 <div className="flex items-center gap-2">
                   <div className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-white/15 text-white text-[11px] font-medium px-3 py-1 rounded-full">
                     <IconMic />
-                    <span>Micro: Bật</span>
+                    <span>{hasCamera ? "Micro: Bật" : "Micro: Mẫu"}</span>
                   </div>
                   <div className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-[#276749]/40 text-[#E8F1EB] text-[11px] font-medium px-3 py-1 rounded-full">
                     <IconEye />
@@ -261,7 +372,7 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
                 {/* Record / Stop Button */}
                 <button
                   type="button"
-                  onClick={() => setRecording(!recording)}
+                  onClick={toggleRecording}
                   className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-[13px] text-white transition-all active:scale-[0.98] ${
                     recording
                       ? "bg-[#C24141] hover:bg-[#a53232]"
@@ -275,11 +386,12 @@ export default function StudioPage({ onNav, onAnalyze, userRole }: StudioPagePro
                 {/* Send for Analysis Button */}
                 <button
                   type="button"
-                  onClick={onAnalyze}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-[13px] bg-white text-[#24312B] hover:bg-[#F5F7F6] border border-[#DCE5DF] transition-all active:scale-[0.98]"
+                  disabled={isUploading}
+                  onClick={handleSendForAnalysis}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-[13px] bg-white text-[#24312B] hover:bg-[#F5F7F6] border border-[#DCE5DF] transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   <IconSend />
-                  <span>Gửi phân tích</span>
+                  <span>{isUploading ? "Đang gửi..." : "Gửi phân tích"}</span>
                 </button>
               </div>
             </div>

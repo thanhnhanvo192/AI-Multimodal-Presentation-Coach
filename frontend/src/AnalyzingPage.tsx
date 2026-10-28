@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import Sidebar, { UserRole } from "./Sidebar";
 import { Button, Card, Badge } from "./components/common";
 import { createMockSession } from "./mocks/mockHistory";
+import { presentationService } from "./services";
 
 /* ── Circular Progress (Standardized Deep Forest Green) ───────── */
 function CircularProgress({ pct }: { pct: number }) {
@@ -58,15 +60,14 @@ function CircularProgress({ pct }: { pct: number }) {
   );
 }
 
-/* ── Step List ──────────────────────────────────────────── */
-const STEPS = [
-  { label: "Đang tải video lên hệ thống", done: true, active: false },
-  { label: "Trích xuất luồng âm thanh", done: true, active: false },
-  { label: "Phát hiện điểm mốc khuôn mặt (Face Landmarks)", done: true, active: false },
-  { label: "Đo lường tỉ lệ giao tiếp mắt", done: false, active: true },
-  { label: "Phân tích nhịp độ và tốc độ nói (WPM)", done: false, active: false },
-  { label: "Phát hiện và thống kê từ đệm", done: false, active: false },
-  { label: "Tổng hợp báo cáo và khuyến nghị từ AI", done: false, active: false },
+const STEP_DEFINITIONS = [
+  { label: "Đang tải video lên hệ thống", doneAt: 10 },
+  { label: "Trích xuất luồng âm thanh", doneAt: 25 },
+  { label: "Phát hiện điểm mốc khuôn mặt (Face Landmarks)", doneAt: 45 },
+  { label: "Đo lường tỉ lệ giao tiếp mắt", doneAt: 60 },
+  { label: "Phân tích nhịp độ và tốc độ nói (WPM)", doneAt: 75 },
+  { label: "Phát hiện và thống kê từ đệm", doneAt: 90 },
+  { label: "Tổng hợp báo cáo và khuyến nghị từ AI", doneAt: 100 },
 ];
 
 function StepIcon({ done, active }: { done: boolean; active: boolean }) {
@@ -103,10 +104,15 @@ interface AnalyzingPageProps {
 }
 
 export default function AnalyzingPage({ onNav, onDone, userRole }: AnalyzingPageProps) {
-  const [progress, setProgress] = useState(42);
+  const [searchParams] = useSearchParams();
+  const presentationId = searchParams.get("id");
+
+  const [progress, setProgress] = useState(presentationId ? 15 : 42);
   const [tipIdx, setTipIdx] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const createdSessionRef = useRef<string | number | null>(null);
 
+  // Xoay vòng các mẹo luyện tập
   useEffect(() => {
     const tInterval = window.setInterval(() => {
       setTipIdx((i) => (i + 1) % TIPS.length);
@@ -114,22 +120,56 @@ export default function AnalyzingPage({ onNav, onDone, userRole }: AnalyzingPage
     return () => window.clearInterval(tInterval);
   }, []);
 
+  // Polling tiến độ thực tế từ Backend nếu có presentationId
   useEffect(() => {
-    const pInterval = window.setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          window.clearInterval(pInterval);
-          return 100;
-        }
-        return p + Math.floor(Math.random() * 6 + 2);
-      });
-    }, 350);
-    return () => window.clearInterval(pInterval);
-  }, []);
+    if (!presentationId) {
+      // Chế độ mô phỏng fallback
+      const pInterval = window.setInterval(() => {
+        setProgress((p) => {
+          if (p >= 100) {
+            window.clearInterval(pInterval);
+            return 100;
+          }
+          return p + Math.floor(Math.random() * 6 + 2);
+        });
+      }, 350);
+      return () => window.clearInterval(pInterval);
+    }
 
+    let isSubscribed = true;
+    const pollInterval = window.setInterval(async () => {
+      try {
+        const data = await presentationService.getStatus(presentationId);
+        if (!isSubscribed) return;
+
+        if (data.status === "PROCESSING") {
+          setProgress(Math.max(data.progress_percentage, 15));
+        } else if (data.status === "COMPLETED") {
+          setProgress(100);
+          window.clearInterval(pollInterval);
+          if (onDone && !createdSessionRef.current) {
+            createdSessionRef.current = presentationId;
+            setTimeout(() => onDone(presentationId), 700);
+          }
+        } else if (data.status === "FAILED") {
+          window.clearInterval(pollInterval);
+          setErrorMessage(data.error_message || "Quá trình phân tích bài thuyết trình thất bại.");
+        }
+      } catch (err) {
+        console.warn("[AnalyzingPage] Polling failed, switching to local increment:", err);
+        setProgress((p) => Math.min(p + 5, 95));
+      }
+    }, 1500);
+
+    return () => {
+      isSubscribed = false;
+      window.clearInterval(pollInterval);
+    };
+  }, [presentationId, onDone]);
+
+  // Fallback khi hoàn thành cho chế độ mock không có ID
   useEffect(() => {
-    if (progress >= 100 && onDone && !createdSessionRef.current) {
-      // Cơ chế mock tối thiểu: Tạo phiên mới và chuyển tới báo cáo của chính phiên vừa tạo
+    if (!presentationId && progress >= 100 && onDone && !createdSessionRef.current) {
       const newSession = createMockSession({
         title: "Phiên phân tích vừa ghi",
         context: "Luyện tập tự do",
@@ -146,7 +186,7 @@ export default function AnalyzingPage({ onNav, onDone, userRole }: AnalyzingPage
       }, 900);
       return () => window.clearTimeout(id);
     }
-  }, [progress, onDone]);
+  }, [progress, presentationId, onDone]);
 
   const isCompleted = progress >= 100;
 
@@ -158,79 +198,64 @@ export default function AnalyzingPage({ onNav, onDone, userRole }: AnalyzingPage
       <main className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 overflow-y-auto">
         <div className="flex flex-col items-center gap-5 max-w-lg w-full">
           {/* Progress & Session Info Card */}
-          <Card className="p-6 flex flex-col items-center gap-4 w-full">
-            {/* Session Indicator Badge */}
-            <div className="flex items-center gap-2">
-              <Badge variant="primary" withDot>
-                Phiên #47
-              </Badge>
-              <span className="text-[12px] text-[#69766F]">
-                bai_thuyet_trinh_pbl6.mp4 (04:32)
-              </span>
-            </div>
+          <Card className="w-full p-6 flex flex-col items-center text-center space-y-4">
+            <CircularProgress pct={progress} />
 
-            <CircularProgress pct={Math.min(progress, 100)} />
-
-            <div className="text-center space-y-1">
-              <h1 className="text-[16px] font-bold text-[#24312B] tracking-tight">
-                {isCompleted
-                  ? "Phân tích đa phương thức hoàn tất!"
-                  : "Đang phân tích đa phương thức..."}
+            <div className="space-y-1">
+              <h1 className="text-[18px] font-bold text-[#24312B] tracking-tight">
+                {isCompleted ? "Phân tích hoàn tất!" : "Đang phân tích bài thuyết trình"}
               </h1>
-              <p className="text-[12px] text-[#69766F] max-w-sm">
-                Mô hình AI đang trích xuất giao tiếp mắt, tốc độ nói, ngôn ngữ cơ thể và từ đệm
+              <p className="text-[12.5px] text-[#69766F] leading-relaxed">
+                {isCompleted
+                  ? "Báo cáo chi tiết đã sẵn sàng. Bạn có thể xem kết quả ngay."
+                  : "Mô hình AI đa kênh đang phân tích cử chỉ, ánh mắt và bóc băng âm thanh."}
               </p>
             </div>
 
-            {/* Overall Linear Progress Bar */}
-            <div className="w-full space-y-1.5 pt-2 border-t border-[#DCE5DF]">
-              <div className="flex justify-between text-[12px] font-medium text-[#69766F]">
-                <span>Tiến độ tổng thể</span>
-                <span className="font-semibold text-[#24312B]">
-                  {Math.min(progress, 100)}%
-                </span>
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] text-[13px] flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{errorMessage}</span>
               </div>
-              <div className="h-1.5 bg-[#DCE5DF] rounded-full overflow-hidden w-full">
-                <div
-                  className="h-full bg-[#276749] rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(progress, 100)}%` }}
-                />
-              </div>
-            </div>
+            )}
           </Card>
 
           {/* Analysis Workflow Steps Card */}
           <Card className="w-full divide-y divide-[#DCE5DF] overflow-hidden p-0">
-            {STEPS.map(({ label, done, active }, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 px-4 py-3 text-[12.5px] transition-colors ${
-                  active ? "bg-[#E8F1EB]/50" : "bg-white"
-                }`}
-              >
-                <StepIcon done={done} active={active} />
-                <span
-                  className={`flex-1 ${
-                    done
-                      ? "text-[#69766F] line-through opacity-75"
-                      : active
-                      ? "text-[#24312B] font-semibold"
-                      : "text-[#69766F]"
+            {STEP_DEFINITIONS.map(({ label, doneAt }, i) => {
+              const prevDoneAt = i > 0 ? STEP_DEFINITIONS[i - 1].doneAt : 0;
+              const isDone = progress >= doneAt;
+              const isActive = progress >= prevDoneAt && progress < doneAt;
+
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 px-4 py-3 text-[12.5px] transition-colors ${
+                    isActive ? "bg-[#E8F1EB]/50" : "bg-white"
                   }`}
                 >
-                  {label}
-                </span>
+                  <StepIcon done={isDone} active={isActive} />
+                  <span
+                    className={`flex-1 ${
+                      isDone
+                        ? "text-[#69766F] line-through opacity-75"
+                        : isActive
+                        ? "text-[#24312B] font-semibold"
+                        : "text-[#69766F]"
+                    }`}
+                  >
+                    {label}
+                  </span>
 
-                {done && (
-                  <Badge variant="success">Hoàn thành</Badge>
-                )}
-                {active && (
-                  <Badge variant="primary" withDot>
-                    Đang xử lý
-                  </Badge>
-                )}
-              </div>
-            ))}
+                  {isDone && <Badge variant="success">Hoàn thành</Badge>}
+                  {isActive && (
+                    <Badge variant="primary" withDot>
+                      Đang xử lý
+                    </Badge>
+                  )}
+                </div>
+              );
+            })}
           </Card>
 
           {/* Coaching Tip Box */}
@@ -255,20 +280,16 @@ export default function AnalyzingPage({ onNav, onDone, userRole }: AnalyzingPage
               size="lg"
               className="w-full justify-center"
               onClick={() => {
-                if (createdSessionRef.current) {
-                  onDone(createdSessionRef.current);
+                const targetId = presentationId || createdSessionRef.current;
+                if (targetId) {
+                  onDone(targetId);
                 } else {
-                  const s = createMockSession({
-                    title: "Phiên phân tích vừa ghi",
-                    context: "Luyện tập tự do",
-                    duration: "04:32",
-                  });
-                  createdSessionRef.current = s.id;
-                  onDone(s.id);
+                  onNav("history");
                 }
               }}
+              disabled={!isCompleted}
             >
-              Xem báo cáo phân tích →
+              Xem báo cáo phân tích
             </Button>
           )}
         </div>

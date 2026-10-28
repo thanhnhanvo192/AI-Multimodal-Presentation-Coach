@@ -276,7 +276,7 @@ Tạo file mới: `backend/app/api/v1/endpoints/admin.py`, bảo vệ bằng dep
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPRINT 1: Nền tảng Xác thực & Chuẩn hóa Kết nối (1 - 2 ngày)                │
+│ SPRINT 1: Nền tảng Xác thực & Chuẩn hóa Kết nối (ĐÃ HOÀN THÀNH - MERGED)    │
 │ • Backend: Bổ sung role vào User Model & Schema; tạo Seeder tài khoản mẫu.  │
 │ • Frontend: Chuẩn hóa Base URL; viết authService; nâng cấp AuthContext.     │
 │ • Tích hợp & Kiểm thử: Đăng ký (/signup) và Đăng nhập (/login).             │
@@ -284,11 +284,11 @@ Tạo file mới: `backend/app/api/v1/endpoints/admin.py`, bảo vệ bằng dep
                                        │
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPRINT 2: Luồng Xử lý Video Cốt lõi (2 - 3 ngày)                            │
-│ • Frontend: Tích hợp FormData upload thật tại UploadPage.                   │
-│ • Frontend: Tích hợp MediaRecorder tại StudioPage để xuất video blob.       │
-│ • Tích hợp Polling tiến độ tại AnalyzingPage với endpoint status.           │
-│ • Tích hợp ReportPage: Hiển thị chỉ số AI & Đồng bộ Player tua video lỗi.   │
+│ SPRINT 2: Luồng Xử lý Video Cốt lõi (ĐÃ HOÀN THÀNH - READY TO MERGE)        │
+│ • DevOps: 4 Containers Docker Compose (DB, Redis, Backend, Nginx Reverse).   │
+│ • Backend: API Upload, Background Polling, Report, Pytest test suite.       │
+│ • Frontend: UploadPage (FormData thật), StudioPage (Webcam + MediaRecorder).│
+│ • Frontend: AnalyzingPage (Polling % AI ngầm), ReportPage (Video Player Sync)│
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
                                        ▼
