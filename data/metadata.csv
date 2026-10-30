@@ -1,0 +1,33 @@
+video_id,filename,context,topic,speaker_gender,duration_sec,source_url,framing_quality,status
+HB_001,hb_001.mp4,hung_bien,The Power of Vulnerability | Brené Brown | TED,KhongXacDinh,1250,https://www.youtube.com/watch?v=iCvmsMzlF7o,Tot_WaistUp,Raw
+HB_002,hb_002.mp4,hung_bien,Tranh bien Truong Teen - Huong Giang (Dau lanh hay Tim nong),Nu,220,https://www.youtube.com/watch?v=KA3lyGIJvdo,Tot_WaistUp,Raw
+HB_003,hb_003.mp4,hung_bien,Tranh bien Truong Teen - Toc Tien (Dau lanh hay Tim nong),Nu,173,https://www.youtube.com/watch?v=KA3lyGIJvdo,Tot_WaistUp,Raw
+HB_004,hb_004.mp4,hung_bien,Hùng biện Trường Teen,Nu,256,https://www.youtube.com/watch?v=hgL_U6KiOgM&t=377s,Tot_WaistUp,Raw
+HB_005,hb_005.mp4,hung_bien,Hùng biện Trường Teen,Nu,253,https://www.youtube.com/watch?v=hgL_U6KiOgM&t=377s,Tot_WaistUp,Raw
+HB_006,hb_006.mp4,hung_bien,Hùng biện Trường Teen,Nu,247,https://www.youtube.com/watch?v=jxTaydBnwIg,Tot_WaistUp,Raw
+HB_007,hb_007.mp4,hung_bien,Hùng biện Trường Teen,Nu,215,https://www.youtube.com/watch?v=90M3wyQgm9o&t=21s,Tot_WaistUp,Raw
+HB_008,hb_008.mp4,hung_bien,Hùng biện Trường Teen,Nam,224,https://www.youtube.com/watch?v=Lwke3EfIbFM&t=4s,Tot_WaistUp,Raw
+PT_001,pt_001.mp4,pitching,Pitching DRONE LIGHT SHOW Vietnam Track,Nam,289,https://www.youtube.com/watch?v=aKw7pTi1SNU,Tot_WaistUp,Raw
+PT_002,pt_002.mp4,pitching,Pitching HappyTrees Cà chua trái cây,Nam,157,https://www.youtube.com/watch?v=DSnwgjUbICI,Tot_WaistUp,Raw
+PT_003,pt_003.mp4,pitching,Pitching Transform Studio Mô hình Cosplay,Nam,152,https://www.youtube.com/watch?v=DSnwgjUbICI,Tot_WaistUp,Raw
+PT_004,pt_004.mp4,pitching,Pitching EKID Studio Đồ chơi công nghệ AR,Nam,170,https://www.youtube.com/watch?v=DSnwgjUbICI,Tot_WaistUp,Raw
+PT_005,pt_005.mp4,pitching,Pitching Gcalls Nền tảng viễn thông thông minh,Nam,148,https://www.youtube.com/watch?v=TaFYHE5EJsw,Tot_WaistUp,Raw
+PT_006,pt_006.mp4,pitching,Pitching Talks Cafe Mô hình học tiếng Anh,Nam,160,https://www.youtube.com/watch?v=JFpdLLqOWfY,Tot_WaistUp,Raw
+PT_007,pt_007.mp4,pitching,Pitching Trường Foods Thịt chua Phú Thọ,Nu,160,https://www.youtube.com/watch?v=mQILEAre604,Tot_WaistUp,Raw
+PT_008,pt_008.mp4,pitching,Pitching Soya Garden Chuỗi đậu nành hữu cơ,Nam,165,https://www.youtube.com/watch?v=nyY3CqKXEHA,Tot_WaistUp,Raw
+PT_009,pt_009.mp4,pitching,Pitching Bami King Chuỗi bánh mì kẹp thịt bò nướng,Nam,167,https://www.youtube.com/watch?v=DSnwgjUbICI,Tot_WaistUp,Raw
+PT_010,pt_010.mp4,pitching,Pitching Coolmate Thời trang nam D2C,Nam,160,https://www.youtube.com/watch?v=Mt3gZnIIuUQ,Tot_WaistUp,Raw
+PT_011,pt_011.mp4,pitching,Pitching Equo Ống hút tự nhiên,Nu,155,https://www.youtube.com/watch?v=6eKX1nbtQqo,Tot_WaistUp,Raw
+PT_012,pt_012.mp4,pitching,Pitching Star Global Số hóa không gian 3D,Nam,160,https://www.youtube.com/watch?v=UR-hu6CILgc,Tot_WaistUp,Raw
+PT_013,pt_013.mp4,pitching,Pitching SuperShip Giao hàng thu tiền hộ,Nam,165,https://www.youtube.com/watch?v=3LrCmLlSxXg,Tot_WaistUp,Raw
+PT_014,pt_014.mp4,pitching,Pitching Nobita Pro Phần mềm quản lý đơn hàng,Nam,160,https://www.youtube.com/watch?v=px3EyPMFVLo,Tot_WaistUp,Raw
+PT_015,pt_015.mp4,pitching,Pitching Wiibike Xe đạp trợ lực xanh,Nu,160,https://www.youtube.com/watch?v=gGNXychI0eI,Tot_WaistUp,Raw
+PT_016,pt_016.mp4,pitching,Pitching EIY Public Speaking Kỹ năng thuyết trình,Nu,165,https://www.youtube.com/watch?v=Ys7APd4fenw,Tot_WaistUp,Raw
+DA_001,da_001.mp4,do_an,Seminar CNTT & Định hướng Nghề nghiệp Gen Z - Hoàng Nam Tiến (TEDxFPTUniversity),Nam,200,https://www.youtube.com/watch?v=zQy376ZwupI,Tot_WaistUp,Raw
+DA_002,da_002.mp4,do_an,Báo cáo Chuyên đề Định vị Năng lực Cá nhân - Trúc Anh Nguyễn (TEDxVinschool),Nu,170,https://www.youtube.com/watch?v=PB6naThC1bw,Tot_WaistUp,Raw
+DA_003,da_003.mp4,do_an,Seminar Xây dựng Bản sắc Học thuật & Cá nhân - Hà Trang Meichan (TEDxGreenwich),Nu,170,https://www.youtube.com/watch?v=J9z_LWlDCRY,Tot_WaistUp,Raw
+DA_004,da_004.mp4,do_an,Seminar Khoa học Triết lý Kiến trúc Hạnh phúc - PGS.TS Hoàng Thúc Hào (TEDxFPTU),Nam,165,https://www.youtube.com/watch?v=YB641YaAggM,Tot_WaistUp,Raw
+DA_005,da_005.mp4,do_an,Chuyên đề Phương pháp Tư duy & Viết Học thuật - Huỳnh Vĩnh Sơn (TEDxUAH),Nam,165,https://www.youtube.com/watch?v=GeuJ9xc-9L4,Tot_WaistUp,Raw
+DA_006,da_006.mp4,do_an,Báo cáo Khoa học Tự nhiên & Văn hóa Số - Trần Nguyên Khang (TEDxHCMUS),Nam,165,https://www.youtube.com/watch?v=nXjuxJOFy1U,Tot_WaistUp,Raw
+DA_007,da_007.mp4,do_an,Seminar Phân tích Mô hình Quản trị & Chiến lược - Lê Đăng Khoa (TEDxFPTU),Nam,165,https://www.youtube.com/watch?v=3I6fpaWLnHU,Tot_WaistUp,Raw
+DA_008,da_008.mp4,do_an,Seminar Tâm lý học Ứng dụng & Quản trị Thất bại - Hoàng Oanh (TEDxFPTU),Nu,165,https://www.youtube.com/watch?v=Ha6guNv9fOA,Tot_WaistUp,Raw

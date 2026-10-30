@@ -1,0 +1,79 @@
+{
+  "video_id": "PT_009",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 60.69,
+    "head_posture_score": 60.1,
+    "facial_expression_score": 72.95,
+    "speech_rate_score": 78.6,
+    "filler_control_score": 93.66,
+    "overall_score": 72.44
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 60.67,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 73.06,
+    "speech_rate_score": 78.66,
+    "filler_control_score": 93.6,
+    "overall_score": 72.21
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.034,
+      "shap_impact": -1.24
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.103,
+      "shap_impact": -1.02
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.93
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 7.418,
+      "shap_impact": -0.5
+    },
+    {
+      "feature": "vis_19_head_jitter_pitch",
+      "feature_vi": "vis_19_head_jitter_pitch",
+      "value": 3.264,
+      "shap_impact": -0.32
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 2.236,
+      "shap_impact": 1.01
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.621,
+      "shap_impact": 0.33
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.21
+    },
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 103.654,
+      "shap_impact": 0.1
+    }
+  ]
+}

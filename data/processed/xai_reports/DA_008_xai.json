@@ -1,0 +1,85 @@
+{
+  "video_id": "DA_008",
+  "context": "do_an",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 58.37,
+    "head_posture_score": 90.21,
+    "facial_expression_score": 88.76,
+    "speech_rate_score": 73.57,
+    "filler_control_score": 96.01,
+    "overall_score": 79.09
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 58.22,
+    "head_posture_score": 90.11,
+    "facial_expression_score": 88.74,
+    "speech_rate_score": 73.47,
+    "filler_control_score": 96.0,
+    "overall_score": 79.02
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 75.0,
+      "shap_impact": -2.22
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.0,
+      "shap_impact": -1.02
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.688,
+      "shap_impact": -0.16
+    },
+    {
+      "feature": "aud_47_spec_rolloff_std",
+      "feature_vi": "aud_47_spec_rolloff_std",
+      "value": 1935.667,
+      "shap_impact": -0.13
+    },
+    {
+      "feature": "vis_20_head_jitter_roll",
+      "feature_vi": "vis_20_head_jitter_roll",
+      "value": 2.017,
+      "shap_impact": -0.11
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 0.5,
+      "shap_impact": 1.02
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.062,
+      "shap_impact": 0.73
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 0.99,
+      "shap_impact": 0.48
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.375,
+      "shap_impact": 0.42
+    },
+    {
+      "feature": "vis_15_head_deviation_mean",
+      "feature_vi": "Độ lệch góc tư thế đầu trung bình (Yaw/Pitch/Roll)",
+      "value": 10.851,
+      "shap_impact": 0.33
+    }
+  ]
+}
