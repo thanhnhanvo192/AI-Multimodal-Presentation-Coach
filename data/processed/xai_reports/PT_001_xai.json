@@ -1,0 +1,85 @@
+{
+  "video_id": "PT_001",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 68.81,
+    "head_posture_score": 69.76,
+    "facial_expression_score": 98.05,
+    "speech_rate_score": 78.47,
+    "filler_control_score": 92.85,
+    "overall_score": 81.99
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 68.61,
+    "head_posture_score": 69.72,
+    "facial_expression_score": 98.0,
+    "speech_rate_score": 78.32,
+    "filler_control_score": 92.8,
+    "overall_score": 81.69
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.66
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.5,
+      "shap_impact": -0.29
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.333,
+      "shap_impact": -0.15
+    },
+    {
+      "feature": "aud_08_f0_std_hz",
+      "feature_vi": "Độ biến thiên ngữ điệu giọng nói (Pitch F0 SD)",
+      "value": 32.247,
+      "shap_impact": -0.15
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 4.147,
+      "shap_impact": -0.12
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 1.0,
+      "shap_impact": 1.45
+    },
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 105.682,
+      "shap_impact": 0.96
+    },
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 2.382,
+      "shap_impact": 0.95
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.5,
+      "shap_impact": 0.81
+    },
+    {
+      "feature": "vis_19_head_jitter_pitch",
+      "feature_vi": "vis_19_head_jitter_pitch",
+      "value": 0.971,
+      "shap_impact": 0.25
+    }
+  ]
+}

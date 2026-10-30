@@ -1,0 +1,85 @@
+{
+  "video_id": "DA_002",
+  "context": "do_an",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 73.38,
+    "head_posture_score": 79.23,
+    "facial_expression_score": 92.13,
+    "speech_rate_score": 79.47,
+    "filler_control_score": 95.95,
+    "overall_score": 82.49
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 73.55,
+    "head_posture_score": 79.12,
+    "facial_expression_score": 92.04,
+    "speech_rate_score": 79.73,
+    "filler_control_score": 96.0,
+    "overall_score": 82.55
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 89.377,
+      "shap_impact": -0.73
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.75,
+      "shap_impact": -0.57
+    },
+    {
+      "feature": "aud_50_subband_1_mean",
+      "feature_vi": "aud_50_subband_1_mean",
+      "value": 0.475,
+      "shap_impact": -0.08
+    },
+    {
+      "feature": "vis_35_smile_au12_p75",
+      "feature_vi": "vis_35_smile_au12_p75",
+      "value": 0.085,
+      "shap_impact": -0.08
+    },
+    {
+      "feature": "aud_52_subband_2_mean",
+      "feature_vi": "aud_52_subband_2_mean",
+      "value": -1.285,
+      "shap_impact": -0.05
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.542,
+      "shap_impact": 2.06
+    },
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 0.5,
+      "shap_impact": 1.08
+    },
+    {
+      "feature": "vis_15_head_deviation_mean",
+      "feature_vi": "Độ lệch góc tư thế đầu trung bình (Yaw/Pitch/Roll)",
+      "value": 13.95,
+      "shap_impact": 0.37
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 0.0,
+      "shap_impact": 0.33
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.333,
+      "shap_impact": 0.23
+    }
+  ]
+}

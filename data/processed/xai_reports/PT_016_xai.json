@@ -1,0 +1,79 @@
+{
+  "video_id": "PT_016",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 58.18,
+    "head_posture_score": 59.91,
+    "facial_expression_score": 95.04,
+    "speech_rate_score": 73.31,
+    "filler_control_score": 69.16,
+    "overall_score": 72.35
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 58.14,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 95.08,
+    "speech_rate_score": 73.39,
+    "filler_control_score": 69.3,
+    "overall_score": 72.38
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 6.655,
+      "shap_impact": -2.36
+    },
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 91.33,
+      "shap_impact": -1.0
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.125,
+      "shap_impact": -0.94
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.68
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.812,
+      "shap_impact": -0.53
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.438,
+      "shap_impact": 1.42
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.23
+    },
+    {
+      "feature": "vis_35_smile_au12_p75",
+      "feature_vi": "vis_35_smile_au12_p75",
+      "value": 0.396,
+      "shap_impact": 0.12
+    },
+    {
+      "feature": "vis_36_smile_au12_p90",
+      "feature_vi": "vis_36_smile_au12_p90",
+      "value": 0.501,
+      "shap_impact": 0.06
+    }
+  ]
+}

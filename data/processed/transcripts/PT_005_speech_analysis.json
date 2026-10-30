@@ -1,0 +1,18 @@
+{
+  "video_id": "PT_005",
+  "context": "pitching",
+  "duration_sec": 148.01,
+  "wpm_speech_rate": 104.88,
+  "filler_words_per_min": 5.72,
+  "pause_duration_ratio": 0.352,
+  "f0_mean_hz": 160.87,
+  "f0_std_hz": 58.18,
+  "rubric_scores": {
+    "eye_contact_score": 61.35,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 76.04,
+    "speech_rate_score": 79.38,
+    "filler_control_score": 74.46,
+    "overall_score": 70.39
+  }
+}

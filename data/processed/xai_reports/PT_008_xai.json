@@ -1,0 +1,85 @@
+{
+  "video_id": "PT_008",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 60.34,
+    "head_posture_score": 59.9,
+    "facial_expression_score": 78.53,
+    "speech_rate_score": 80.13,
+    "filler_control_score": 85.48,
+    "overall_score": 72.69
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 60.29,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 78.61,
+    "speech_rate_score": 80.02,
+    "filler_control_score": 85.35,
+    "overall_score": 72.53
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.114,
+      "shap_impact": -0.95
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.82
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.143,
+      "shap_impact": -0.53
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 5.802,
+      "shap_impact": -0.46
+    },
+    {
+      "feature": "vis_04_head_yaw_std",
+      "feature_vi": "vis_04_head_yaw_std",
+      "value": 33.947,
+      "shap_impact": -0.38
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 106.145,
+      "shap_impact": 0.42
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.2
+    },
+    {
+      "feature": "aud_16_f0_p10_hz",
+      "feature_vi": "aud_16_f0_p10_hz",
+      "value": 160.0,
+      "shap_impact": 0.16
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.657,
+      "shap_impact": 0.1
+    },
+    {
+      "feature": "aud_48_vocal_liveliness_index",
+      "feature_vi": "aud_48_vocal_liveliness_index",
+      "value": 1.423,
+      "shap_impact": 0.08
+    }
+  ]
+}

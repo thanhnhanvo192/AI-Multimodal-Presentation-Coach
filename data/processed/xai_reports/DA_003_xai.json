@@ -1,0 +1,85 @@
+{
+  "video_id": "DA_003",
+  "context": "do_an",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 59.29,
+    "head_posture_score": 75.17,
+    "facial_expression_score": 90.65,
+    "speech_rate_score": 78.45,
+    "filler_control_score": 95.93,
+    "overall_score": 77.64
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 59.16,
+    "head_posture_score": 74.95,
+    "facial_expression_score": 90.39,
+    "speech_rate_score": 78.41,
+    "filler_control_score": 96.0,
+    "overall_score": 77.62
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 85.227,
+      "shap_impact": -1.61
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.0,
+      "shap_impact": -1.06
+    },
+    {
+      "feature": "aud_50_subband_1_mean",
+      "feature_vi": "aud_50_subband_1_mean",
+      "value": 0.748,
+      "shap_impact": -0.11
+    },
+    {
+      "feature": "ctx_02_hung_bien",
+      "feature_vi": "ctx_02_hung_bien",
+      "value": 0.0,
+      "shap_impact": -0.11
+    },
+    {
+      "feature": "vis_27_gaze_vert_mean",
+      "feature_vi": "vis_27_gaze_vert_mean",
+      "value": 0.244,
+      "shap_impact": -0.1
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 1.27,
+      "shap_impact": 1.05
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.312,
+      "shap_impact": 0.43
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 0.0,
+      "shap_impact": 0.35
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.3
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.625,
+      "shap_impact": 0.21
+    }
+  ]
+}

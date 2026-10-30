@@ -1,0 +1,644 @@
+[
+  {
+    "timestamp_sec": 0.0,
+    "head_pose": {
+      "yaw": -18.09,
+      "pitch": 6.2,
+      "roll": -2.88
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 175.9,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-18.09°, Pitch=6.2°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 4.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 160.5,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 7.0,
+    "head_pose": {
+      "yaw": 32.37,
+      "pitch": -0.3,
+      "roll": -1.65
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=32.37°, Pitch=-0.3°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 11.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 170.0,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 15.0,
+    "head_pose": {
+      "yaw": 17.95,
+      "pitch": 10.85,
+      "roll": 0.06
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.007,
+    "pitch_f0_hz": 182.0,
+    "wpm_instant": 102,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 18.0,
+    "head_pose": {
+      "yaw": -9.84,
+      "pitch": 9.17,
+      "roll": 3.36
+    },
+    "eye_contact": true,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 179.7,
+    "wpm_instant": 104,
+    "is_violation": false
+  },
+  {
+    "timestamp_sec": 22.0,
+    "head_pose": {
+      "yaw": -27.44,
+      "pitch": 9.61,
+      "roll": -8.32
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.04,
+    "pitch_f0_hz": 166.7,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-27.44°, Pitch=9.61°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 26.0,
+    "head_pose": {
+      "yaw": -19.08,
+      "pitch": 6.51,
+      "roll": -3.81
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.231,
+    "pitch_f0_hz": 169.9,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-19.08°, Pitch=6.51°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 29.0,
+    "head_pose": {
+      "yaw": -70.31,
+      "pitch": 31.85,
+      "roll": -28.57
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 173.4,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-70.31°, Pitch=31.85°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 33.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 171.0,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 37.0,
+    "head_pose": {
+      "yaw": -32.7,
+      "pitch": 7.58,
+      "roll": -7.02
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.072,
+    "pitch_f0_hz": 170.5,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-32.7°, Pitch=7.58°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 40.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 173.1,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 44.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 164.2,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 48.0,
+    "head_pose": {
+      "yaw": 20.66,
+      "pitch": 8.34,
+      "roll": 15.6
+    },
+    "eye_contact": true,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 172.3,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=20.66°, Pitch=8.34°)"
+  },
+  {
+    "timestamp_sec": 52.0,
+    "head_pose": {
+      "yaw": -69.1,
+      "pitch": 24.4,
+      "roll": -12.89
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.001,
+    "pitch_f0_hz": 177.6,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-69.1°, Pitch=24.4°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 55.0,
+    "head_pose": {
+      "yaw": -20.57,
+      "pitch": 4.06,
+      "roll": 4.92
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 181.0,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-20.57°, Pitch=4.06°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 59.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 174.3,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 63.0,
+    "head_pose": {
+      "yaw": 58.86,
+      "pitch": 94.54,
+      "roll": 6.88
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=58.86°, Pitch=94.54°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 66.0,
+    "head_pose": {
+      "yaw": 7.14,
+      "pitch": 5.85,
+      "roll": -13.97
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 173.7,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 70.0,
+    "head_pose": {
+      "yaw": 3.13,
+      "pitch": 5.53,
+      "roll": -2.99
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 180.1,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 74.0,
+    "head_pose": {
+      "yaw": -68.62,
+      "pitch": 33.14,
+      "roll": -37.46
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.001,
+    "pitch_f0_hz": 172.0,
+    "wpm_instant": 107,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-68.62°, Pitch=33.14°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 77.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 81.0,
+    "head_pose": {
+      "yaw": 15.72,
+      "pitch": 5.06,
+      "roll": -31.64
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 173.2,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 85.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 164.2,
+    "wpm_instant": 106,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 88.0,
+    "head_pose": {
+      "yaw": -23.5,
+      "pitch": 2.56,
+      "roll": 3.29
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 176.7,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-23.5°, Pitch=2.56°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 92.0,
+    "head_pose": {
+      "yaw": -26.75,
+      "pitch": 3.77,
+      "roll": 0.73
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.009,
+    "pitch_f0_hz": 179.3,
+    "wpm_instant": 106,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-26.75°, Pitch=3.77°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 96.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 172.3,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 99.0,
+    "head_pose": {
+      "yaw": 0.45,
+      "pitch": 34.7,
+      "roll": -2.27
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.004,
+    "pitch_f0_hz": 177.3,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=0.45°, Pitch=34.7°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 103.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 180.2,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 107.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 174.2,
+    "wpm_instant": 106,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 110.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 177.3,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 114.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 171.9,
+    "wpm_instant": 107,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 118.0,
+    "head_pose": {
+      "yaw": 30.15,
+      "pitch": 0.88,
+      "roll": -5.62
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 177.0,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=30.15°, Pitch=0.88°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 121.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 174.9,
+    "wpm_instant": 103,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 125.0,
+    "head_pose": {
+      "yaw": 31.97,
+      "pitch": -0.31,
+      "roll": 0.21
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.005,
+    "pitch_f0_hz": 172.0,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=31.97°, Pitch=-0.31°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 129.0,
+    "head_pose": {
+      "yaw": 26.47,
+      "pitch": 3.36,
+      "roll": 0.61
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.002,
+    "pitch_f0_hz": 177.5,
+    "wpm_instant": 106,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=26.47°, Pitch=3.36°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 132.0,
+    "head_pose": {
+      "yaw": 25.81,
+      "pitch": -1.9,
+      "roll": -1.66
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 174.6,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=25.81°, Pitch=-1.9°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 136.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 167.9,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 140.0,
+    "head_pose": {
+      "yaw": 31.32,
+      "pitch": 5.22,
+      "roll": -4.23
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 175.7,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=31.32°, Pitch=5.22°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 144.0,
+    "head_pose": {
+      "yaw": 20.66,
+      "pitch": 14.37,
+      "roll": -10.97
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.003,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=20.66°, Pitch=14.37°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 147.0,
+    "head_pose": {
+      "yaw": -57.3,
+      "pitch": 18.87,
+      "roll": 0.48
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.001,
+    "pitch_f0_hz": 181.5,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=-57.3°, Pitch=18.87°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 151.0,
+    "head_pose": {
+      "yaw": 21.95,
+      "pitch": -0.29,
+      "roll": -7.69
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.001,
+    "pitch_f0_hz": 175.1,
+    "wpm_instant": 105,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=21.95°, Pitch=-0.29°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 155.0,
+    "head_pose": {
+      "yaw": 24.75,
+      "pitch": -1.02,
+      "roll": -9.04
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.006,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Lệch tư thế đầu (Yaw=24.75°, Pitch=-1.02°); Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 158.0,
+    "head_pose": {
+      "yaw": 4.98,
+      "pitch": -0.13,
+      "roll": 7.43
+    },
+    "eye_contact": true,
+    "smile_intensity": 0.01,
+    "pitch_f0_hz": 174.9,
+    "wpm_instant": 104,
+    "is_violation": false
+  },
+  {
+    "timestamp_sec": 162.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 0.0,
+    "wpm_instant": 0,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  },
+  {
+    "timestamp_sec": 166.0,
+    "head_pose": {
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "roll": 0.0
+    },
+    "eye_contact": false,
+    "smile_intensity": 0.0,
+    "pitch_f0_hz": 175.6,
+    "wpm_instant": 104,
+    "is_violation": true,
+    "violation_type": "Mất tương tác ánh mắt với camera"
+  }
+]

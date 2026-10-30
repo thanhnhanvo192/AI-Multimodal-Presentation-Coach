@@ -1,0 +1,18 @@
+{
+  "video_id": "DA_005",
+  "context": "do_an",
+  "duration_sec": 165.0,
+  "wpm_speech_rate": 99.88,
+  "filler_words_per_min": 0.5,
+  "pause_duration_ratio": 0.312,
+  "f0_mean_hz": 159.31,
+  "f0_std_hz": 43.09,
+  "rubric_scores": {
+    "eye_contact_score": 58.0,
+    "head_posture_score": 82.5,
+    "facial_expression_score": 88.97,
+    "speech_rate_score": 90.51,
+    "filler_control_score": 96.0,
+    "overall_score": 81.72
+  }
+}

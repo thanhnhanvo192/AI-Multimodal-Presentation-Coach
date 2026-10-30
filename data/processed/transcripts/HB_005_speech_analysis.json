@@ -1,0 +1,18 @@
+{
+  "video_id": "HB_005",
+  "context": "hung_bien",
+  "duration_sec": 253.01,
+  "wpm_speech_rate": 118.22,
+  "filler_words_per_min": 3.88,
+  "pause_duration_ratio": 0.349,
+  "f0_mean_hz": 240.99,
+  "f0_std_hz": 56.12,
+  "rubric_scores": {
+    "eye_contact_score": 64.3,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 76.6,
+    "speech_rate_score": 98.0,
+    "filler_control_score": 84.58,
+    "overall_score": 78.6
+  }
+}

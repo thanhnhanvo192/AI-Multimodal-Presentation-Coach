@@ -1,0 +1,85 @@
+{
+  "video_id": "HB_003",
+  "context": "hung_bien",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 60.02,
+    "head_posture_score": 60.11,
+    "facial_expression_score": 87.95,
+    "speech_rate_score": 87.79,
+    "filler_control_score": 91.73,
+    "overall_score": 78.94
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 59.76,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 87.87,
+    "speech_rate_score": 87.64,
+    "filler_control_score": 91.74,
+    "overall_score": 78.78
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.132,
+      "shap_impact": -0.9
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.763,
+      "shap_impact": -0.51
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 4.617,
+      "shap_impact": -0.38
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.632,
+      "shap_impact": -0.31
+    },
+    {
+      "feature": "vis_04_head_yaw_std",
+      "feature_vi": "vis_04_head_yaw_std",
+      "value": 24.111,
+      "shap_impact": -0.17
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 2.575,
+      "shap_impact": 0.77
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.263,
+      "shap_impact": 0.67
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 0.0,
+      "shap_impact": 0.5
+    },
+    {
+      "feature": "ctx_02_hung_bien",
+      "feature_vi": "ctx_02_hung_bien",
+      "value": 1.0,
+      "shap_impact": 0.35
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.28
+    }
+  ]
+}

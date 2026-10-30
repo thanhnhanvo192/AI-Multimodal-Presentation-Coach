@@ -1,0 +1,85 @@
+{
+  "video_id": "HB_004",
+  "context": "hung_bien",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 71.33,
+    "head_posture_score": 67.42,
+    "facial_expression_score": 76.35,
+    "speech_rate_score": 92.82,
+    "filler_control_score": 92.63,
+    "overall_score": 81.18
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 71.38,
+    "head_posture_score": 67.39,
+    "facial_expression_score": 76.37,
+    "speech_rate_score": 92.9,
+    "filler_control_score": 92.56,
+    "overall_score": 81.39
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.034,
+      "shap_impact": -0.92
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.69,
+      "shap_impact": -0.28
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.483,
+      "shap_impact": -0.21
+    },
+    {
+      "feature": "vis_15_head_deviation_mean",
+      "feature_vi": "Độ lệch góc tư thế đầu trung bình (Yaw/Pitch/Roll)",
+      "value": 20.001,
+      "shap_impact": -0.11
+    },
+    {
+      "feature": "vis_09_smile_au12_mean",
+      "feature_vi": "vis_09_smile_au12_mean",
+      "value": 0.026,
+      "shap_impact": -0.08
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 2.426,
+      "shap_impact": 1.26
+    },
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 107.1,
+      "shap_impact": 1.04
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.414,
+      "shap_impact": 0.63
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 0.0,
+      "shap_impact": 0.58
+    },
+    {
+      "feature": "ctx_02_hung_bien",
+      "feature_vi": "ctx_02_hung_bien",
+      "value": 1.0,
+      "shap_impact": 0.31
+    }
+  ]
+}

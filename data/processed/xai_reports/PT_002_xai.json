@@ -1,0 +1,85 @@
+{
+  "video_id": "PT_002",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 66.43,
+    "head_posture_score": 59.91,
+    "facial_expression_score": 80.77,
+    "speech_rate_score": 78.54,
+    "filler_control_score": 94.8,
+    "overall_score": 75.75
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 66.29,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 80.92,
+    "speech_rate_score": 78.49,
+    "filler_control_score": 94.87,
+    "overall_score": 75.73
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.84
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 5.297,
+      "shap_impact": -0.49
+    },
+    {
+      "feature": "vis_02_eye_contact_ratio",
+      "feature_vi": "Tỷ lệ duy trì giao tiếp ánh mắt với camera",
+      "value": 0.269,
+      "shap_impact": -0.34
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.615,
+      "shap_impact": -0.3
+    },
+    {
+      "feature": "vis_04_head_yaw_std",
+      "feature_vi": "vis_04_head_yaw_std",
+      "value": 30.039,
+      "shap_impact": -0.29
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 2.006,
+      "shap_impact": 0.97
+    },
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.5,
+      "shap_impact": 0.78
+    },
+    {
+      "feature": "aud_04_dead_air_ratio",
+      "feature_vi": "Tỷ lệ khoảng lặng chết (> 2.5 giây)",
+      "value": 0.0,
+      "shap_impact": 0.25
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.192,
+      "shap_impact": 0.22
+    },
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 103.359,
+      "shap_impact": 0.12
+    }
+  ]
+}

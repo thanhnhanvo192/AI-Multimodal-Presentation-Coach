@@ -1,0 +1,85 @@
+{
+  "video_id": "PT_014",
+  "context": "pitching",
+  "base_score_phi0": 77.91,
+  "predicted_scores": {
+    "eye_contact_score": 69.45,
+    "head_posture_score": 59.71,
+    "facial_expression_score": 83.18,
+    "speech_rate_score": 71.1,
+    "filler_control_score": 88.28,
+    "overall_score": 74.63
+  },
+  "ground_truth_scores": {
+    "eye_contact_score": 69.5,
+    "head_posture_score": 60.0,
+    "facial_expression_score": 83.16,
+    "speech_rate_score": 71.06,
+    "filler_control_score": 88.33,
+    "overall_score": 74.63
+  },
+  "top_penalties_shap": [
+    {
+      "feature": "aud_01_wpm_speech_rate",
+      "feature_vi": "Tốc độ nói trung bình (Words Per Minute - WPM)",
+      "value": 95.81,
+      "shap_impact": -0.69
+    },
+    {
+      "feature": "ctx_03_pitching",
+      "feature_vi": "ctx_03_pitching",
+      "value": 1.0,
+      "shap_impact": -0.64
+    },
+    {
+      "feature": "vis_04_head_yaw_std",
+      "feature_vi": "vis_04_head_yaw_std",
+      "value": 27.863,
+      "shap_impact": -0.41
+    },
+    {
+      "feature": "vis_18_head_jitter_yaw",
+      "feature_vi": "vis_18_head_jitter_yaw",
+      "value": 4.648,
+      "shap_impact": -0.4
+    },
+    {
+      "feature": "vis_17_posture_violation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nghiêng/cúi đầu vượt ngưỡng 15°",
+      "value": 0.696,
+      "shap_impact": -0.36
+    }
+  ],
+  "top_strengths_shap": [
+    {
+      "feature": "vis_29_gaze_deviation_ratio",
+      "feature_vi": "Tỷ lệ thời gian nhìn lệch khỏi vùng trung tâm",
+      "value": 0.609,
+      "shap_impact": 0.5
+    },
+    {
+      "feature": "aud_05_filler_words_per_min",
+      "feature_vi": "Tần suất phát âm từ đệm (ờ, à, ừm) mỗi phút",
+      "value": 3.195,
+      "shap_impact": 0.3
+    },
+    {
+      "feature": "vis_10_smile_active_ratio",
+      "feature_vi": "Tần suất biểu cảm nụ cười tích cực (Action Unit AU12)",
+      "value": 0.217,
+      "shap_impact": 0.28
+    },
+    {
+      "feature": "vis_49_pitch_p75",
+      "feature_vi": "vis_49_pitch_p75",
+      "value": 4.502,
+      "shap_impact": 0.15
+    },
+    {
+      "feature": "aud_16_f0_p10_hz",
+      "feature_vi": "aud_16_f0_p10_hz",
+      "value": 175.06,
+      "shap_impact": 0.12
+    }
+  ]
+}
