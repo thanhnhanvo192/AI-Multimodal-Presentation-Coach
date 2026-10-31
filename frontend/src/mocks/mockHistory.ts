@@ -1,10 +1,13 @@
 import { PresentationSession, WeeklyScoreTrend } from "../types";
+import { FullAssessmentData, RubricScores, ActionPlanItem } from "../types/assessment";
+import { adaptFullAssessmentToReport, FULL_ASSESSMENT_DATA } from "./mockFullAssessment";
 
 export interface DetailedSessionReport {
   sessionId: string | number;
   title: string;
   date: string;
   duration: string;
+  durationSec?: number;
   context: string;
   overallScore: number;
   trendScore: number;
@@ -16,6 +19,11 @@ export interface DetailedSessionReport {
     emotionPercent: number;
     bodyLanguagePercent: number;
     volumePercent: number;
+    // 5 trục Rubric chuẩn AI Core
+    headPosturePercent?: number;
+    facialExpressionPercent?: number;
+    speechRatePercent?: number;
+    fillerControlPercent?: number;
   };
   metricBars: {
     eyeContact: number;
@@ -34,6 +42,8 @@ export interface DetailedSessionReport {
     symbol: string;
     label: string;
     severity: string;
+    timestampSec?: number;
+    timeFormatted?: string;
   }>;
   transcript: string;
   strengths: {
@@ -48,6 +58,14 @@ export interface DetailedSessionReport {
     title: string;
     description: string;
   };
+  // Các trường AI Core mở rộng
+  aiAssessment?: FullAssessmentData;
+  aiCoachPersona?: string;
+  summaryFeedback?: string;
+  detailedStrengths?: string[];
+  detailedWeaknesses?: string[];
+  actionPlan?: ActionPlanItem[];
+  rubricScores?: RubricScores;
 }
 
 export const CHART_DATA: WeeklyScoreTrend[] = [
@@ -58,6 +76,18 @@ export const CHART_DATA: WeeklyScoreTrend[] = [
 ];
 
 export const SESSIONS: PresentationSession[] = [
+  {
+    id: "DA_001",
+    date: "Hôm nay",
+    title: "Bảo vệ Đồ án Tốt nghiệp CNTT — Hội đồng chấm thi",
+    context: "Bảo vệ đồ án",
+    duration: "03:20",
+    score: Math.round(FULL_ASSESSMENT_DATA.overall_score),
+    trend: +4,
+    eyeContact: Math.round(FULL_ASSESSMENT_DATA.rubric_scores.eye_contact_score),
+    wpm: 75,
+    fillerWords: 3,
+  },
   {
     id: 1,
     date: "11/09/2026",
@@ -192,6 +222,10 @@ export function createMockSession(
 export function getReportBySessionId(
   id: string | number
 ): DetailedSessionReport | null {
+  if (String(id) === "DA_001" || String(id) === "da_001") {
+    return adaptFullAssessmentToReport();
+  }
+
   const session = getSessionById(id);
   if (!session) return null;
 

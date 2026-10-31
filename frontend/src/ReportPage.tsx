@@ -7,20 +7,62 @@ import { getReportBySessionId, DetailedSessionReport } from "./mocks/mockHistory
 /* ── Dynamic Radar Chart ─────────────────────────────────────── */
 function RadarChart({
   metrics,
+  rubricScores,
 }: {
   metrics: DetailedSessionReport["radarMetrics"];
+  rubricScores?: DetailedSessionReport["rubricScores"];
 }) {
   const cx = 110,
     cy = 110,
-    r = 76;
+    r = 74;
 
-  const axes = [
-    { label: "Tốc độ (WPM)", angle: -90, value: metrics.wpmPercent },
-    { label: "Giao tiếp mắt", angle: -18, value: metrics.eyeContactPercent },
-    { label: "Cảm xúc", angle: 54, value: metrics.emotionPercent },
-    { label: "Ngôn ngữ cơ thể", angle: 126, value: metrics.bodyLanguagePercent },
-    { label: "Âm lượng giọng", angle: 198, value: metrics.volumePercent },
-  ];
+  const isAIStandard = Boolean(rubricScores || metrics.headPosturePercent !== undefined);
+
+  const axes = isAIStandard
+    ? [
+        {
+          label: "Tốc độ nói",
+          angle: -90,
+          value: rubricScores
+            ? rubricScores.speech_rate_score / 100
+            : metrics.speechRatePercent ?? metrics.wpmPercent,
+        },
+        {
+          label: "Ánh mắt",
+          angle: -18,
+          value: rubricScores
+            ? rubricScores.eye_contact_score / 100
+            : metrics.eyeContactPercent,
+        },
+        {
+          label: "Biểu cảm",
+          angle: 54,
+          value: rubricScores
+            ? rubricScores.facial_expression_score / 100
+            : metrics.facialExpressionPercent ?? metrics.emotionPercent,
+        },
+        {
+          label: "Tư thế đầu",
+          angle: 126,
+          value: rubricScores
+            ? rubricScores.head_posture_score / 100
+            : metrics.headPosturePercent ?? metrics.bodyLanguagePercent,
+        },
+        {
+          label: "Từ đệm",
+          angle: 198,
+          value: rubricScores
+            ? rubricScores.filler_control_score / 100
+            : metrics.fillerControlPercent ?? metrics.volumePercent,
+        },
+      ]
+    : [
+        { label: "Tốc độ (WPM)", angle: -90, value: metrics.wpmPercent },
+        { label: "Giao tiếp mắt", angle: -18, value: metrics.eyeContactPercent },
+        { label: "Cảm xúc", angle: 54, value: metrics.emotionPercent },
+        { label: "Ngôn ngữ cơ thể", angle: 126, value: metrics.bodyLanguagePercent },
+        { label: "Âm lượng giọng", angle: 198, value: metrics.volumePercent },
+      ];
 
   const toXY = (angle: number, radius: number) => ({
     x: cx + radius * Math.cos((angle * Math.PI) / 180),
@@ -206,6 +248,14 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
 
   const report = sessionId ? getReportBySessionId(sessionId) : null;
 
+  const durationSec = report?.durationSec || 200.02;
+  const currentSec = (playhead / 100) * durationSec;
+  const currentMin = Math.floor(currentSec / 60);
+  const currentSecRemain = Math.floor(currentSec % 60);
+  const currentTimeStr = `${String(currentMin).padStart(2, "0")}:${String(
+    currentSecRemain
+  ).padStart(2, "0")}`;
+
   /* Trạng thái khi không tìm thấy phiên hoặc ID không hợp lệ */
   if (!report) {
     return (
@@ -348,10 +398,7 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                       </svg>
                     </button>
                     <span className="font-mono text-white/90 text-[12px]">
-                      {`0${Math.floor((playhead / 100) * 4)}:${String(
-                        Math.floor((playhead / 100) * 60) % 60
-                      ).padStart(2, "0")}`}{" "}
-                      / {report.duration}
+                      {currentTimeStr} / {report.duration}
                     </span>
                   </div>
 
@@ -382,9 +429,14 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
             {/* Event Timeline & Warnings */}
             <Card className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[12px] font-semibold text-[#69766F] uppercase tracking-wider">
-                  Dòng thời gian sự kiện
-                </p>
+                <div>
+                  <p className="text-[12px] font-semibold text-[#69766F] uppercase tracking-wider">
+                    Dòng thời gian sự kiện &amp; Mốc lỗi
+                  </p>
+                  <p className="text-[11px] text-[#69766F]">
+                    Nhấp vào mốc hoặc sự kiện bên dưới để tua video đến thời điểm vi phạm
+                  </p>
+                </div>
                 <div className="flex items-center gap-3 text-[11.5px] text-[#69766F]">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#C24141]" />
@@ -405,25 +457,27 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                   style={{ width: `${playhead}%` }}
                 />
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#276749] border-2 border-white z-20"
+                  className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-[#276749] border-2 border-white z-20 shadow-sm"
                   style={{ left: `calc(${playhead}% - 7px)` }}
                 />
 
                 {report.timelineMarkers.map((m, i) => (
                   <div
                     key={i}
-                    className="absolute top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                    className="absolute top-1/2 -translate-y-1/2 z-10 cursor-pointer group"
                     style={{ left: `calc(${m.pct}% - 6px)` }}
                     onMouseEnter={() => setHoverMarker(i)}
                     onMouseLeave={() => setHoverMarker(null)}
+                    onClick={() => setPlayhead(m.pct)}
+                    title={`Tua đến ${m.timeFormatted || `${m.pct}%`}: ${m.label}`}
                   >
                     <div
-                      className="w-3.5 h-3.5 rounded-full border-2 border-white"
+                      className="w-3.5 h-3.5 rounded-full border-2 border-white transition-transform group-hover:scale-125 shadow-sm"
                       style={{ background: m.color }}
                     />
                     {hoverMarker === i && (
-                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#24312B] text-white text-[11px] font-medium px-2.5 py-1 rounded-md whitespace-nowrap z-30 pointer-events-none">
-                        {m.symbol} {m.severity}: {m.label}
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#24312B] text-white text-[11px] font-medium px-2.5 py-1 rounded-md whitespace-nowrap z-30 pointer-events-none shadow-md">
+                        {m.timeFormatted ? `[${m.timeFormatted}] ` : ""}{m.symbol} {m.severity}: {m.label}
                       </div>
                     )}
                   </div>
@@ -431,20 +485,34 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
               </div>
 
               {/* Marker Legend Detailed List */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-[#DCE5DF]">
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-[#DCE5DF] max-h-56 overflow-y-auto pr-1">
                 {report.timelineMarkers.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-[12px]">
-                    <span className="text-[12px]">{m.symbol}</span>
-                    <span
-                      className={`font-semibold ${
-                        m.severity === "Cần lưu ý"
-                          ? "text-[#C24141]"
-                          : "text-[#B7791F]"
-                      }`}
-                    >
-                      {m.severity}:
+                  <div
+                    key={i}
+                    onClick={() => setPlayhead(m.pct)}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-[#F5F7F6] cursor-pointer transition-colors text-[12px] group border border-transparent hover:border-[#DCE5DF]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-[12px]">{m.symbol}</span>
+                      {m.timeFormatted && (
+                        <span className="font-mono text-[11px] font-semibold text-[#276749] bg-[#E8F1EB] px-1.5 py-0.5 rounded">
+                          {m.timeFormatted}
+                        </span>
+                      )}
+                      <span
+                        className={`font-semibold flex-shrink-0 ${
+                          m.severity === "Cần lưu ý"
+                            ? "text-[#C24141]"
+                            : "text-[#B7791F]"
+                        }`}
+                      >
+                        {m.severity}:
+                      </span>
+                      <span className="text-[#24312B] truncate">{m.label}</span>
+                    </div>
+                    <span className="text-[11px] text-[#69766F] group-hover:text-[#276749] font-medium whitespace-nowrap pl-2">
+                      Tua đến &rarr;
                     </span>
-                    <span className="text-[#24312B]">{m.label}</span>
                   </div>
                 ))}
               </div>
@@ -468,6 +536,23 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
 
           {/* ── RIGHT: Prioritized Evaluation & Analysis (40%) ─── */}
           <div className="flex-1 lg:flex-[4] min-w-0 flex flex-col gap-4 overflow-y-auto p-5">
+            {/* AI COACH PERSONA BADGE (Nếu có từ AI Core) */}
+            {report.aiCoachPersona && (
+              <div className="bg-[#E8F1EB] border border-[#C2DEC9] rounded-xl p-3.5 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#276749] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
+                  AI
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#276749] block">
+                    AI Coach Persona Phản Biện
+                  </span>
+                  <p className="text-[12.5px] font-semibold text-[#24312B] truncate">
+                    {report.aiCoachPersona}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* 1. TỔNG QUAN & ĐIỂM SỐ CHÍNH */}
             <Card className="p-5 space-y-4">
               <div className="flex items-center justify-between">
@@ -533,9 +618,21 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
               <p className="text-[12.5px] font-semibold text-[#24312B]">
                 {report.strengths.title}
               </p>
-              <p className="text-[12px] text-[#69766F] leading-relaxed">
-                {report.strengths.description}
-              </p>
+
+              {report.detailedStrengths && report.detailedStrengths.length > 0 ? (
+                <div className="space-y-1.5 pt-1">
+                  {report.detailedStrengths.map((s, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-[12px] text-[#24312B]">
+                      <span className="text-[#276749] font-bold mt-0.5">✓</span>
+                      <span className="leading-relaxed">{s}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[12px] text-[#69766F] leading-relaxed">
+                  {report.strengths.description}
+                </p>
+              )}
             </Card>
 
             {/* 3. NHỮNG ĐIỂM CẦN CẢI THIỆN */}
@@ -552,70 +649,142 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
               <p className="text-[12.5px] font-semibold text-[#24312B]">
                 {report.improvements.title}
               </p>
-              <p className="text-[12px] text-[#69766F] leading-relaxed">
-                {report.improvements.description}
-              </p>
+
+              {report.detailedWeaknesses && report.detailedWeaknesses.length > 0 ? (
+                <div className="space-y-1.5 pt-1">
+                  {report.detailedWeaknesses.map((w, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-[12px] text-[#24312B]">
+                      <span className="text-[#B7791F] font-bold mt-0.5">⚠️</span>
+                      <span className="leading-relaxed">{w}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[12px] text-[#69766F] leading-relaxed">
+                  {report.improvements.description}
+                </p>
+              )}
             </Card>
 
             {/* 4. CÁC CHỈ SỐ CHI TIẾT & BIỂU ĐỒ (RADAR) */}
             <Card className="p-5 space-y-3">
-              <p className="text-[12px] font-semibold text-[#69766F] uppercase tracking-wider">
-                4. Phân tích đa chiều (Biểu đồ Radar)
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] font-semibold text-[#69766F] uppercase tracking-wider">
+                  4. Phân tích đa chiều (Biểu đồ Radar)
+                </p>
+                <span className="text-[11px] text-[#276749] font-medium bg-[#E8F1EB] px-2 py-0.5 rounded">
+                  Rubric AI Core
+                </span>
+              </div>
               <div className="flex flex-col items-center gap-3">
-                <RadarChart metrics={report.radarMetrics} />
+                <RadarChart
+                  metrics={report.radarMetrics}
+                  rubricScores={report.rubricScores}
+                />
                 <div className="grid grid-cols-5 gap-1.5 w-full pt-2 border-t border-[#DCE5DF] text-center">
-                  {[
-                    {
-                      label: "WPM",
-                      value: `${Math.round(report.radarMetrics.wpmPercent * 100)}%`,
-                    },
-                    {
-                      label: "Mắt",
-                      value: `${Math.round(report.radarMetrics.eyeContactPercent * 100)}%`,
-                    },
-                    {
-                      label: "Cảm xúc",
-                      value: `${Math.round(report.radarMetrics.emotionPercent * 100)}%`,
-                    },
-                    {
-                      label: "Cơ thể",
-                      value: `${Math.round(report.radarMetrics.bodyLanguagePercent * 100)}%`,
-                    },
-                    {
-                      label: "Âm lượng",
-                      value: `${Math.round(report.radarMetrics.volumePercent * 100)}%`,
-                    },
-                  ].map(({ label, value }) => (
-                    <div key={label}>
-                      <span className="text-[12px] font-bold text-[#24312B] block">
-                        {value}
-                      </span>
-                      <span className="text-[10px] text-[#69766F] font-medium">
-                        {label}
-                      </span>
-                    </div>
-                  ))}
+                  {report.rubricScores
+                    ? [
+                        {
+                          label: "Tốc độ",
+                          value: `${Math.round(report.rubricScores.speech_rate_score)}%`,
+                        },
+                        {
+                          label: "Ánh mắt",
+                          value: `${Math.round(report.rubricScores.eye_contact_score)}%`,
+                        },
+                        {
+                          label: "Biểu cảm",
+                          value: `${Math.round(report.rubricScores.facial_expression_score)}%`,
+                        },
+                        {
+                          label: "Tư thế đầu",
+                          value: `${Math.round(report.rubricScores.head_posture_score)}%`,
+                        },
+                        {
+                          label: "Từ đệm",
+                          value: `${Math.round(report.rubricScores.filler_control_score)}%`,
+                        },
+                      ].map(({ label, value }) => (
+                        <div key={label}>
+                          <span className="text-[12px] font-bold text-[#24312B] block">
+                            {value}
+                          </span>
+                          <span className="text-[10px] text-[#69766F] font-medium">
+                            {label}
+                          </span>
+                        </div>
+                      ))
+                    : [
+                        {
+                          label: "WPM",
+                          value: `${Math.round(report.radarMetrics.wpmPercent * 100)}%`,
+                        },
+                        {
+                          label: "Mắt",
+                          value: `${Math.round(report.radarMetrics.eyeContactPercent * 100)}%`,
+                        },
+                        {
+                          label: "Cảm xúc",
+                          value: `${Math.round(report.radarMetrics.emotionPercent * 100)}%`,
+                        },
+                        {
+                          label: "Cơ thể",
+                          value: `${Math.round(report.radarMetrics.bodyLanguagePercent * 100)}%`,
+                        },
+                        {
+                          label: "Âm lượng",
+                          value: `${Math.round(report.radarMetrics.volumePercent * 100)}%`,
+                        },
+                      ].map(({ label, value }) => (
+                        <div key={label}>
+                          <span className="text-[12px] font-bold text-[#24312B] block">
+                            {value}
+                          </span>
+                          <span className="text-[10px] text-[#69766F] font-medium">
+                            {label}
+                          </span>
+                        </div>
+                      ))}
                 </div>
               </div>
             </Card>
 
-            {/* 5. KHUYẾN NGHỊ LUYỆN TẬP TIẾP THEO */}
-            <Card className="p-4 space-y-2 border-l-4 border-l-[#276749]">
+            {/* 5. KHUYẾN NGHỊ LUYỆN TẬP TIẾP THEO (ACTION PLAN) */}
+            <Card className="p-4 space-y-3 border-l-4 border-l-[#276749]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-[12px] font-bold text-[#24312B] uppercase tracking-wider">
-                    5. Khuyến nghị luyện tập tiếp theo
+                    5. Lộ trình rèn luyện AI Coach chỉ định
                   </span>
                 </div>
+                <Badge variant="primary">Lộ trình 7 ngày</Badge>
               </div>
 
               <p className="text-[12.5px] font-semibold text-[#24312B]">
                 {report.recommendation.title}
               </p>
-              <p className="text-[12px] text-[#69766F] leading-relaxed">
-                {report.recommendation.description}
-              </p>
+
+              {report.actionPlan && report.actionPlan.length > 0 ? (
+                <div className="space-y-2 pt-1">
+                  {report.actionPlan.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-lg bg-[#F5F7F6] border border-[#DCE5DF] flex items-start gap-2.5 text-[12px]"
+                    >
+                      <span className="font-bold text-[#276749] bg-white border border-[#DCE5DF] px-2 py-0.5 rounded text-[11px] whitespace-nowrap shadow-xs">
+                        {step.day}
+                      </span>
+                      <span className="text-[#24312B] leading-relaxed">
+                        {step.exercise}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[12px] text-[#69766F] leading-relaxed">
+                  {report.recommendation.description}
+                </p>
+              )}
             </Card>
           </div>
         </div>
