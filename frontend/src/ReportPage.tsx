@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Sidebar, { UserRole } from "./Sidebar";
 import { Button, Card, Badge } from "./components/common";
 import { getReportBySessionId, DetailedSessionReport } from "./mocks/mockHistory";
+import { presentationService } from "./services";
 
 /* ── Dynamic Radar Chart ─────────────────────────────────────── */
 function RadarChart({
@@ -193,9 +194,6 @@ function MetricBar({
   );
 }
 
-import { useEffect, useRef } from "react";
-import { presentationService } from "./services";
-
 /* ── Main Report Page ─────────────────────────────────────── */
 interface ReportPageProps {
   onNav: (view: string) => void;
@@ -213,6 +211,9 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
   const [videoDuration, setVideoDuration] = useState(180);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [videoError, setVideoError] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [useNativeControls, setUseNativeControls] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -228,7 +229,13 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
       .getReport(sessionId)
       .then((data) => {
         if (!isSubscribed) return;
-        const durSeconds = 180;
+        setVideoError(false);
+        const durSeconds = data.duration_sec && data.duration_sec > 0 ? Math.round(data.duration_sec) : 180;
+        setVideoDuration(durSeconds);
+        const durMinutes = Math.floor(durSeconds / 60);
+        const durSecRemainder = Math.floor(durSeconds % 60);
+        const formattedDuration = `${String(durMinutes).padStart(2, "0")}:${String(durSecRemainder).padStart(2, "0")}`;
+
         const mapped: DetailedSessionReport = {
           sessionId: data.presentation_id,
           title: data.title || "Bài thuyết trình",
@@ -237,7 +244,7 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
             month: "short",
             year: "numeric",
           }),
-          duration: "03:00",
+          duration: formattedDuration,
           context: "Bảo vệ đề án",
           overallScore: Math.round(data.total_score || 80),
           trendScore: 3,
@@ -297,6 +304,10 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
         console.warn("[ReportPage] Lấy báo cáo từ API không thành công, sử dụng dữ liệu mẫu:", err);
         const fallback = getReportBySessionId(sessionId);
         setReport(fallback || null);
+        // Luôn luôn kết nối luồng video thật từ backend để người dùng phát lại được video
+        if (sessionId) {
+          setVideoUrl(presentationService.resolveVideoUrl(`/presentations/${sessionId}/video`));
+        }
         setLoading(false);
       });
 
@@ -330,7 +341,7 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
       videoRef.current.currentTime = targetTime;
       setCurrentTime(targetTime);
       setPlayhead(videoDuration > 0 ? (targetTime / videoDuration) * 100 : marker.pct);
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => { });
       setIsPlaying(true);
     } else {
       setPlayhead(marker.pct);
@@ -343,6 +354,20 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
       if (dur && !isNaN(dur) && isFinite(dur)) {
         setVideoDuration(dur);
       }
+      // Nạp frame đầu tiên để không bị đen màn hình khi tải trang
+      if (videoRef.current.currentTime === 0) {
+        try {
+          videoRef.current.currentTime = 0.001;
+        } catch (_) { }
+      }
+    }
+  };
+
+  const handleLoadedData = () => {
+    if (videoRef.current && videoRef.current.currentTime === 0) {
+      try {
+        videoRef.current.currentTime = 0.001;
+      } catch (_) { }
     }
   };
 
@@ -357,11 +382,46 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
     }
   };
 
+  const toggleMute = () => {
+    if (videoRef.current) {
+      const nextMuted = !videoRef.current.muted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (videoRef.current) {
+      if (!document.fullscreenElement) {
+        videoRef.current.requestFullscreen().catch(() => { });
+      } else {
+        document.exitFullscreen().catch(() => { });
+      }
+    }
+  };
+
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play().catch((e) => console.warn("Video playback error:", e));
-      setIsPlaying(true);
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setVideoError(false);
+          })
+          .catch((err) => {
+            console.warn("[ReportPage] Trình duyệt chặn autoplay có tiếng, thử chế độ tắt tiếng:", err);
+            if (videoRef.current) {
+              videoRef.current.muted = true;
+              setIsMuted(true);
+              videoRef.current
+                .play()
+                .then(() => setIsPlaying(true))
+                .catch(() => setVideoError(true));
+            }
+          });
+      }
     } else {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -486,22 +546,86 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
           {/* ── LEFT: Video, Timeline & Transcript (60%) ───── */}
           <div className="flex-1 lg:flex-[6] min-w-0 flex flex-col overflow-y-auto p-5 space-y-4 border-r border-[#DCE5DF]">
             {/* Video Player Box */}
-            <div
-              className="rounded-xl overflow-hidden bg-[#1A231F] border border-[#DCE5DF] relative group"
-              style={{ aspectRatio: "16/9" }}
-            >
+            <div className="w-full aspect-video min-h-[300px] max-h-[520px] rounded-2xl overflow-hidden bg-black border border-[#DCE5DF] relative group select-none shadow-md flex items-center justify-center">
               {videoUrl ? (
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  className="w-full h-full object-cover"
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => setIsPlaying(false)}
-                  playsInline
-                />
+                <>
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    crossOrigin="anonymous"
+                    controls={useNativeControls}
+                    className="w-full h-full object-contain bg-black cursor-pointer"
+                    onClick={togglePlay}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onLoadedData={handleLoadedData}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                    onError={(e) => {
+                      console.warn("[ReportPage] Trình duyệt báo lỗi giải mã video:", e);
+                      setVideoError(true);
+                    }}
+                    playsInline
+                    preload="auto"
+                  />
+
+                  {/* Lớp gradient đáy - chỉ ở 1/3 dưới để text và thanh điều khiển dễ đọc, không che mờ video */}
+                  {!useNativeControls && (
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none z-10" />
+                  )}
+
+                  {/* Nút Play to ở tâm khi video dừng - Trong suốt không phủ rèm đen */}
+                  {!isPlaying && !videoError && !useNativeControls && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                      <button
+                        type="button"
+                        onClick={togglePlay}
+                        className="pointer-events-auto w-16 h-16 rounded-full bg-[#276749]/95 hover:bg-[#276749] text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer border-2 border-white/30 backdrop-blur-xs"
+                        aria-label="Phát video"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" className="ml-1">
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Cảnh báo và giải pháp khi trình duyệt không giải mã được video */}
+                  {videoError && (
+                    <div className="absolute inset-0 z-30 bg-black/90 flex flex-col items-center justify-center p-6 text-center text-white space-y-3">
+                      <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+                        ⚠️
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-[14px]">Không thể giải mã trực tiếp khung hình video</p>
+                        <p className="text-[12px] text-white/70 max-w-md">
+                          Video đã được nộp và phân tích AI thành công. Vui lòng mở video trong tab mới hoặc bật trình phát gốc của trình duyệt.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 pt-1">
+                        <a
+                          href={videoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-4 py-2 rounded-lg bg-[#276749] text-white text-[12px] font-medium hover:bg-[#1f533a] transition-all"
+                        >
+                          Mở video trong tab mới ↗
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVideoError(false);
+                            setUseNativeControls(true);
+                          }}
+                          className="px-4 py-2 rounded-lg bg-white/20 text-white text-[12px] font-medium hover:bg-white/30 transition-all"
+                        >
+                          Dùng trình phát gốc
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-[#1A231F] text-white/70 relative">
                   <img
@@ -520,76 +644,163 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-              {/* Top Session Info Pill */}
-              <div className="absolute top-3 left-3">
-                <span className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#276749] animate-pulse" />
-                  Phiên #{report.sessionId} — {videoUrl ? "Video trực tiếp" : "Video lưu trữ"}
-                </span>
-              </div>
-
-              {/* Top-right Duration Pill */}
-              <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11.5px] font-mono font-medium px-2.5 py-1 rounded-md border border-white/10">
-                {formatTime(videoDuration)}
-              </div>
-
-              {/* Bottom Playback Controls */}
-              <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex flex-col gap-2 z-20">
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  value={playhead}
-                  onChange={(e) => handleSeek(Number(e.target.value))}
-                  className="w-full h-1.5 accent-[#276749] bg-white/30 rounded cursor-pointer transition-all"
-                  aria-label="Tua video"
-                />
-                <div className="flex items-center justify-between text-[12px] text-white">
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={togglePlay}
-                      className="w-8 h-8 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
-                      aria-label={isPlaying ? "Tạm dừng video" : "Phát video"}
-                    >
-                      {isPlaying ? (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-                          <rect x="6" y="4" width="4" height="16" />
-                          <rect x="14" y="4" width="4" height="16" />
-                        </svg>
-                      ) : (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      )}
-                    </button>
-                    <span className="font-mono text-white/90 text-[12px]">
-                      {formatTime(currentTime)} / {formatTime(videoDuration)}
+              {/* Top Session Info Pill và Controls toggle */}
+              {!useNativeControls && (
+                <>
+                  <div className="absolute top-3 left-3 z-20 pointer-events-none">
+                    <span className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5 shadow-sm">
+                      <span className="w-2 h-2 rounded-full bg-[#276749] animate-pulse" />
+                      Phiên #{report.sessionId} — {videoUrl ? "Video bài thuyết trình" : "Video lưu trữ"}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11.5px] text-white/80">
-                    {[0.5, 1, 1.5, 2].map((rate) => (
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setUseNativeControls(true)}
+                      className="bg-black/60 backdrop-blur-sm text-white/90 hover:text-white text-[11px] font-medium px-2 py-1 rounded-md border border-white/10 hover:bg-black/80 transition-all cursor-pointer shadow-sm"
+                      title="Bật trình phát gốc của trình duyệt (HTML5 Controls)"
+                    >
+                      Điều khiển gốc
+                    </button>
+                    <div className="bg-black/60 backdrop-blur-sm text-white text-[11.5px] font-mono font-medium px-2.5 py-1 rounded-md border border-white/10 shadow-sm">
+                      {formatTime(videoDuration)}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Bottom Playback Controls */}
+              {!useNativeControls && (
+                <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex flex-col gap-2 z-20">
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={playhead}
+                    onChange={(e) => handleSeek(Number(e.target.value))}
+                    className="w-full h-1.5 accent-[#276749] bg-white/30 rounded cursor-pointer transition-all"
+                    aria-label="Tua video"
+                  />
+                  <div className="flex items-center justify-between text-[12px] text-white">
+                    <div className="flex items-center gap-2.5">
                       <button
-                        key={rate}
                         type="button"
-                        onClick={() => changeRate(rate)}
-                        className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
-                          playbackRate === rate
-                            ? "text-white font-semibold bg-[#276749]"
-                            : "hover:text-white hover:bg-white/20"
-                        }`}
+                        onClick={togglePlay}
+                        className="w-8 h-8 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
+                        aria-label={isPlaying ? "Tạm dừng video" : "Phát video"}
                       >
-                        {rate}×
+                        {isPlaying ? (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                            <rect x="6" y="4" width="4" height="16" />
+                            <rect x="14" y="4" width="4" height="16" />
+                          </svg>
+                        ) : (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                          </svg>
+                        )}
                       </button>
-                    ))}
+
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className="w-8 h-8 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
+                        aria-label={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+                        title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+                      >
+                        {isMuted ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
+                            <line x1="23" y1="9" x2="17" y2="15" />
+                            <line x1="17" y1="9" x2="23" y2="15" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="white" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                          </svg>
+                        )}
+                      </button>
+
+                      <span className="font-mono text-white/90 text-[12px]">
+                        {formatTime(currentTime)} / {formatTime(videoDuration)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-[11.5px] text-white/80">
+                        {[0.5, 1, 1.5, 2].map((rate) => (
+                          <button
+                            key={rate}
+                            type="button"
+                            onClick={() => changeRate(rate)}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${playbackRate === rate
+                                ? "text-white font-semibold bg-[#276749]"
+                                : "hover:text-white hover:bg-white/20"
+                              }`}
+                          >
+                            {rate}×
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        className="w-8 h-8 rounded-md bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer text-white"
+                        aria-label="Toàn màn hình"
+                        title="Toàn màn hình"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
+
+            {/* Thanh phụ trợ video: Mở tab mới, tải về máy, chuyển controls */}
+            {videoUrl && (
+              <div className="flex items-center justify-between px-3 py-2 text-[12px] bg-white rounded-xl border border-[#DCE5DF] shadow-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-[#276749] flex-shrink-0" />
+                  <span className="font-semibold text-[#24312B] flex-shrink-0">Tệp video:</span>
+                  <span className="font-mono text-[11.5px] text-[#69766F] truncate max-w-[180px] sm:max-w-[280px]">
+                    {videoUrl.split("/").pop()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setUseNativeControls(!useNativeControls)}
+                    className="text-[#276749] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    {useNativeControls ? "Ẩn điều khiển gốc" : "Dùng điều khiển gốc"}
+                  </button>
+                  <span className="text-[#DCE5DF]">|</span>
+                  <a
+                    href={videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#276749] font-medium hover:underline flex items-center gap-1"
+                  >
+                    Mở tab mới ↗
+                  </a>
+                  <span className="text-[#DCE5DF]">|</span>
+                  <a
+                    href={videoUrl}
+                    download
+                    className="text-[#276749] font-medium hover:underline flex items-center gap-1"
+                  >
+                    Tải về ⤓
+                  </a>
+                </div>
+              </div>
+            )}
 
             {/* Event Timeline & Warnings */}
             <Card className="p-5 space-y-3">
@@ -625,7 +836,7 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                   style={{ left: `calc(${playhead}% - 7px)` }}
                 />
 
-                {report.timelineMarkers.map((m, i) => (
+                {/* {report.timelineMarkers.map((m, i) => (
                   <button
                     key={i}
                     type="button"
@@ -646,38 +857,49 @@ export default function ReportPage({ onNav, userRole }: ReportPageProps) {
                       </div>
                     )}
                   </button>
-                ))}
+                ))} */}
               </div>
 
               {/* Marker Legend Detailed List */}
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-[#DCE5DF]">
-                {report.timelineMarkers.map((m, i) => (
-                  <div
-                    key={i}
-                    onClick={() => handleMarkerClick(m)}
-                    className="flex items-center justify-between text-[12px] p-2 rounded-lg hover:bg-[#F5F7F6] cursor-pointer transition-colors group/item"
-                    title="Nhấn để tua video đến thời điểm này"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-[12px]">{m.symbol}</span>
-                      <span
-                        className={`font-semibold ${
-                          m.severity === "Cần lưu ý"
-                            ? "text-[#C24141]"
-                            : m.severity === "Từ đệm"
-                            ? "text-[#B7791F]"
-                            : "text-[#3B82F6]"
-                        }`}
-                      >
-                        {m.severity}:
+              <div
+                className="flex flex-col gap-1.5 pt-2 border-t border-[#DCE5DF] max-h-[220px] overflow-y-auto overscroll-contain pr-1 custom-scroll"
+                style={{
+                  overscrollBehavior: "contain",
+                }}
+              >
+                {report.timelineMarkers.length === 0 ? (
+                  <p className="text-center py-3 text-[12px] text-[#69766F] italic">
+                    Không ghi nhận sự kiện bất thường nào trong bài thuyết trình.
+                  </p>
+                ) : (
+                  report.timelineMarkers.map((m, i) => (
+                    <div
+                      key={i}
+                      onClick={() => handleMarkerClick(m)}
+                      className="flex items-center justify-between text-[12px] p-2 rounded-lg hover:bg-[#F5F7F6] cursor-pointer transition-colors group/item"
+                      title="Nhấn để tua video đến thời điểm này"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[12px]">{m.symbol}</span>
+                        <span
+                          className={`font-semibold ${
+                            m.severity === "Cần lưu ý"
+                              ? "text-[#C24141]"
+                              : m.severity === "Từ đệm"
+                                ? "text-[#B7791F]"
+                                : "text-[#3B82F6]"
+                          }`}
+                        >
+                          {m.severity}:
+                        </span>
+                        <span className="text-[#24312B]">{m.label}</span>
+                      </div>
+                      <span className="text-[11px] font-mono text-[#69766F] group-hover/item:text-[#276749] flex items-center gap-1 font-medium bg-[#E8F1EB]/50 group-hover/item:bg-[#E8F1EB] px-2 py-0.5 rounded">
+                        ▶ {formatTime(m.timestamp ?? (m.pct / 100) * videoDuration)}
                       </span>
-                      <span className="text-[#24312B]">{m.label}</span>
                     </div>
-                    <span className="text-[11px] font-mono text-[#69766F] group-hover/item:text-[#276749] flex items-center gap-1 font-medium bg-[#E8F1EB]/50 group-hover/item:bg-[#E8F1EB] px-2 py-0.5 rounded">
-                      ▶ {formatTime(m.timestamp ?? (m.pct / 100) * videoDuration)}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </Card>
 

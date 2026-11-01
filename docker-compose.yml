@@ -40,12 +40,17 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production-pbl6-2026}
       - UPLOAD_DIR=/app/uploads
+      - WEIGHTS_DIR=/app/weights
+      - SCRIPTS_DIR=/app/scripts
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     ports:
       - "8000:8000"
     volumes:
       - ./backend/uploads:/app/uploads
       - ./backend/app:/app/app
       - ./backend/tests:/app/tests
+      - ./weights:/app/weights:ro
+      - ./scripts:/app/scripts:ro
     depends_on:
       db:
         condition: service_healthy

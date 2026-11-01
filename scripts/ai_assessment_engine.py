@@ -50,7 +50,7 @@ from extract_multimodal_features import (
     ensure_directories_and_weights
 )
 
-WEIGHTS_DIR = os.path.join(PROJECT_ROOT, "weights")
+WEIGHTS_DIR = os.getenv("WEIGHTS_DIR") or os.path.join(PROJECT_ROOT, "weights")
 CATBOOST_DIR = os.path.join(WEIGHTS_DIR, "catboost_scoring")
 META_CONFIG_PATH = os.path.join(CATBOOST_DIR, "model_metadata_123d.json")
 
@@ -101,23 +101,27 @@ PERSONA_SYSTEM_PROMPTS = {
 
 
 class MultimodalAIAssessmentEngine:
-    def __init__(self):
+    def __init__(self, weights_dir=None):
+        self.weights_dir = weights_dir or os.getenv("WEIGHTS_DIR") or os.path.join(PROJECT_ROOT, "weights")
+        self.catboost_dir = os.path.join(self.weights_dir, "catboost_scoring")
+        self.meta_config_path = os.path.join(self.catboost_dir, "model_metadata_123d.json")
+
         ensure_directories_and_weights()
-        print("[AI Core Engine] Đang khởi tạo các bộ trích xuất đặc trưng...")
+        print(f"[AI Core Engine] Đang khởi tạo các bộ trích xuất đặc trưng (Weights: {self.weights_dir})...")
         self.vis_extractor = VisionFeatureExtractor55D()
         self.aud_extractor = AudioFeatureExtractor65D()
 
         print("[AI Core Engine] Đang nạp bộ mô hình CatBoost 123D...")
-        if not os.path.exists(META_CONFIG_PATH):
-            raise FileNotFoundError(f"Chưa tìm thấy file cấu hình: {META_CONFIG_PATH}. Hãy chạy Bước 2 trước!")
+        if not os.path.exists(self.meta_config_path):
+            raise FileNotFoundError(f"Chưa tìm thấy file cấu hình: {self.meta_config_path}. Hãy kiểm tra thư mục weights!")
 
-        with open(META_CONFIG_PATH, 'r', encoding='utf-8') as f:
+        with open(self.meta_config_path, 'r', encoding='utf-8') as f:
             self.metadata = json.load(f)
 
         self.feature_cols = self.metadata['feature_columns_123d']
         self.cat_models = {}
         for target in TARGET_COLS:
-            m_path = os.path.join(CATBOOST_DIR, f"catboost_{target}.cbm")
+            m_path = os.path.join(self.catboost_dir, f"catboost_{target}.cbm")
             model = CatBoostRegressor()
             model.load_model(m_path)
             self.cat_models[target] = model
@@ -126,10 +130,11 @@ class MultimodalAIAssessmentEngine:
         self.shap_explainer = shap.TreeExplainer(self.cat_models['overall_score'])
         print("[AI Core Engine] Hệ thống đã sẵn sàng đánh giá thuyết trình!\n")
 
-    def run_assessment(self, video_path, context_type='do_an', sample_fps=1.5, gemini_api_key=None):
+    def run_assessment(self, video_path, context_type='do_an', sample_fps=1.5, gemini_api_key=None, progress_callback=None):
         """
         Thực hiện đánh giá toàn diện 1 video thuyết trình.
         Trả về dictionary chuẩn 100% với Database Schema (PostgreSQL JSONB).
+        Hỗ trợ progress_callback(percent: int, message: str) để cập nhật tiến độ theo thời gian thực.
         """
         start_total = time.perf_counter()
         if not os.path.exists(video_path):
@@ -146,6 +151,9 @@ class MultimodalAIAssessmentEngine:
         print(f"[*] BẮT ĐẦU ĐÁNH GIÁ: {video_filename} | BỐI CẢNH: {context_clean.upper()}")
         print("=" * 80)
 
+        if progress_callback:
+            progress_callback(10, "Bắt đầu khởi tạo và kiểm tra video...")
+
         # 1. Tách âm thanh 16kHz
         t_wav0 = time.perf_counter()
         temp_dir = os.path.join(PROJECT_ROOT, "data", "processed", "temp_eval")
@@ -157,17 +165,26 @@ class MultimodalAIAssessmentEngine:
         time_wav = time.perf_counter() - t_wav0
         print(f"[1/4] Tách âm thanh 16kHz Mono: Hoàn tất ({time_wav:.2f}s)")
 
+        if progress_callback:
+            progress_callback(25, "Đã tách luồng âm thanh 16kHz. Đang quét tư thế & biểu cảm MediaPipe...")
+
         # 2. Chạy Vision Sub-Engine (55D)
         t_vis0 = time.perf_counter()
         vis_55d, df_vis_frames = self.vis_extractor.process_video(video_path, sample_fps=sample_fps)
         time_vis = time.perf_counter() - t_vis0
         print(f"[2/4] Trích xuất 55D Vision (MediaPipe + solvePnP + 1-Euro Filter): Hoàn tất ({time_vis:.2f}s)")
 
+        if progress_callback:
+            progress_callback(60, "Hoàn tất Vision 55D. Đang phân tích âm học & nhịp nói WPM...")
+
         # 3. Chạy Audio Sub-Engine (65D)
         t_aud0 = time.perf_counter()
         aud_65d, sec_f0, sec_wpm, duration_sec = self.aud_extractor.process_audio(wav_path)
         time_aud = time.perf_counter() - t_aud0
         print(f"[3/4] Trích xuất 65D Audio (Acoustic Prosody + WPM + F0 + Fillers): Hoàn tất ({time_aud:.2f}s)")
+
+        if progress_callback:
+            progress_callback(78, "Đã trích xuất 123 chiều đặc trưng. Đang dự đoán CatBoost & SHAP XAI...")
 
         # 4. Hợp nhất Vector 123D
         ctx_3d = {
@@ -224,6 +241,9 @@ class MultimodalAIAssessmentEngine:
         time_cb = time.perf_counter() - t_cb0
         print(f"[4/4] Dự đoán CatBoost 123D & Giải thích SHAP XAI: Hoàn tất ({time_cb:.3f}s)")
 
+        if progress_callback:
+            progress_callback(88, "Đã tính điểm Rubric & SHAP. Đang tạo phản biện từ Huấn luyện viên AI...")
+
         # 7. Xây dựng Telemetry Time-series (cho Seekbar)
         telemetry_timeseries = build_telemetry_timeseries(df_vis_frames, sec_f0, sec_wpm)
 
@@ -237,6 +257,9 @@ class MultimodalAIAssessmentEngine:
             telemetry_timeseries=telemetry_timeseries,
             api_key=gemini_api_key
         )
+
+        if progress_callback:
+            progress_callback(98, "Tổng hợp toàn bộ chỉ số báo cáo đánh giá...")
 
         total_latency = time.perf_counter() - start_total
 
@@ -280,6 +303,9 @@ class MultimodalAIAssessmentEngine:
         print(f"  • Kiểm soát Từ đệm (Filler Words) : {rubric_scores['filler_control_score']:.2f}")
         print(f"⏱️ Tổng thời gian phân tích: {total_latency:.2f}s (RTF: {total_latency/duration_sec:.3f})")
         print("=" * 80)
+
+        if progress_callback:
+            progress_callback(100, "Hoàn tất đánh giá thuyết trình.")
 
         return assessment_result
 

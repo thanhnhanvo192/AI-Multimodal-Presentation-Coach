@@ -1,7 +1,7 @@
 import os
 import uuid
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -21,6 +21,7 @@ from app.schemas.presentation import (
     RecentSessionItem
 )
 from app.services.video_processor import process_video_background
+from app.services.video_stream import stream_video_partial, get_video_media_type
 
 router = APIRouter(prefix="/presentations", tags=["Presentations"])
 
@@ -222,6 +223,34 @@ async def get_presentation_status(
 
     return presentation
 
+@router.get("/{presentation_id}/video")
+async def stream_presentation_video(
+    presentation_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Phát video trực tuyến chuẩn HTTP 206 Partial Content và CORS.
+    Cho phép trình duyệt tua seekbar mượt mà, đồng bộ với mốc cảnh báo lỗi.
+    """
+    result = await db.execute(
+        select(Presentation).where(Presentation.id == presentation_id)
+    )
+    presentation = result.scalar_one_or_none()
+    if not presentation:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bài thuyết trình")
+
+    file_path = presentation.video_path
+    if not os.path.exists(file_path):
+        # Thử tìm trong UPLOAD_DIR nếu đường dẫn lưu trữ thay đổi
+        alt_path = os.path.join(settings.UPLOAD_DIR, os.path.basename(file_path))
+        if os.path.exists(alt_path):
+            file_path = alt_path
+        else:
+            raise HTTPException(status_code=404, detail="File video không tồn tại trên máy chủ")
+
+    return stream_video_partial(request, file_path)
+
 @router.get("/{presentation_id}/report", response_model=AnalysisReportResponse)
 async def get_presentation_analysis_report(
     presentation_id: int,
@@ -247,8 +276,19 @@ async def get_presentation_analysis_report(
         )
 
     res = presentation.analysis_result
-    video_filename = os.path.basename(presentation.video_path)
-    video_url = f"/uploads/{video_filename}"
+    # Trả về endpoint streaming chuyên biệt hỗ trợ tua Range Request
+    video_url = f"/api/v1/presentations/{presentation.id}/video"
+
+    # Lấy thời lượng từ audio_metrics hoặc transcript hoặc suy ra từ timeline_errors
+    duration_sec = 180.0
+    if isinstance(res.audio_metrics, dict) and res.audio_metrics.get("duration_sec"):
+        duration_sec = float(res.audio_metrics["duration_sec"])
+    elif isinstance(res.transcript, dict) and res.transcript.get("duration_sec"):
+        duration_sec = float(res.transcript["duration_sec"])
+    elif res.timeline_errors and len(res.timeline_errors) > 0:
+        max_ts = max([float(e.get("timestamp", 0)) for e in res.timeline_errors] + [0.0])
+        if max_ts > 10:
+            duration_sec = round(max_ts * 1.1, 1)
 
     return {
         "presentation_id": presentation.id,
@@ -261,6 +301,7 @@ async def get_presentation_analysis_report(
         "audio_metrics": res.audio_metrics,
         "transcript": res.transcript,
         "ai_feedback": res.ai_feedback,
+        "duration_sec": duration_sec,
         "created_at": res.created_at
     }
 

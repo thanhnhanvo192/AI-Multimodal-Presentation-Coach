@@ -50,7 +50,7 @@ TRANSCRIPTS_DIR = os.path.join(PROJECT_ROOT, "data", "processed", "transcripts")
 TELEMETRY_DIR = os.path.join(PROJECT_ROOT, "data", "processed", "telemetry")
 FEATURES_DIR = os.path.join(PROJECT_ROOT, "data", "features")
 ANNOTATIONS_DIR = os.path.join(PROJECT_ROOT, "data", "annotations")
-WEIGHTS_DIR = os.path.join(PROJECT_ROOT, "weights")
+WEIGHTS_DIR = os.getenv("WEIGHTS_DIR") or os.path.join(PROJECT_ROOT, "weights")
 
 FACE_LANDMARKER_PATH = os.path.join(WEIGHTS_DIR, "face_landmarker.task")
 FALLBACK_LANDMARKER_PATH = os.path.join(

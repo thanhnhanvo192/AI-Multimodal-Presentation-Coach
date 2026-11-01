@@ -57,6 +57,7 @@ class AnalysisReportResponse(BaseModel):
     audio_metrics: AudioMetrics
     transcript: Dict[str, Any]
     ai_feedback: AIFeedback
+    duration_sec: Optional[float] = None
     created_at: datetime
 
 class PresentationHistoryItem(BaseModel):

@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Sidebar, { UserRole } from "./Sidebar";
-import { Button, Card, Badge } from "./components/common";
+import { Button, Card } from "./components/common";
+import { presentationService, PresentationScenario } from "./services";
 
 type UploadState = "idle" | "selected" | "uploading" | "done";
 
@@ -10,20 +11,12 @@ interface FileInfo {
   duration?: string;
 }
 
-const MOCK_FILE: FileInfo = {
-  name: "bai_thuyet_trinh_pbl6.mp4",
-  size: "45 MB",
-  duration: "04:32",
-};
-
 const UPLOAD_TIPS = [
   "Quay trong không gian đủ sáng, hướng mặt vào camera để phân tích giao tiếp mắt tốt nhất.",
   "Dùng phòng yên tĩnh để cải thiện độ chính xác khi phân tích âm lượng và từ đệm.",
   "Nói với tốc độ tự nhiên — AI sẽ đưa ra khuyến nghị nếu tốc độ vượt quá 160 WPM.",
   "Nền phía sau đơn giản giúp MediaPipe theo dõi cử chỉ ngôn ngữ cơ thể chính xác hơn.",
 ];
-
-import { presentationService, PresentationScenario } from "./services";
 
 function toScenario(ctx: string): PresentationScenario {
   if (ctx.includes("Phỏng vấn")) return "INTERVIEW";
@@ -38,14 +31,44 @@ interface UploadPageProps {
 }
 
 export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPageProps) {
-  const [state, setState] = useState<UploadState>("selected");
+  const [state, setState] = useState<UploadState>("idle");
   const [dragging, setDragging] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
-  const [file, setFile] = useState<FileInfo>(MOCK_FILE);
+  const [file, setFile] = useState<FileInfo>({ name: "", size: "" });
   const [rawFile, setRawFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [context, setContext] = useState("Bảo vệ đề án");
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+
+  // Dọn dẹp preview object URL khi unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const selectFile = (f: File) => {
+    if (f.size > 100 * 1024 * 1024) {
+      setErrorMessage("Dung lượng file vượt quá giới hạn cho phép (tối đa 100MB). Vui lòng chọn hoặc nén video nhỏ hơn.");
+      return;
+    }
+    if (previewUrl && previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    const objectUrl = URL.createObjectURL(f);
+    setRawFile(f);
+    setPreviewUrl(objectUrl);
+    setFile({
+      name: f.name,
+      size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
+    });
+    setState("selected");
+    setErrorMessage(null);
+  };
 
   /* Drag handlers */
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -60,19 +83,17 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
     setDragging(false);
     const f = e.dataTransfer.files[0];
     if (f) {
-      if (f.size > 100 * 1024 * 1024) {
-        setErrorMessage("Dung lượng file vượt quá giới hạn cho phép (tối đa 100MB). Vui lòng chọn hoặc nén video nhỏ hơn.");
-        return;
-      }
-      setRawFile(f);
-      setFile({ name: f.name, size: `${(f.size / 1024 / 1024).toFixed(1)} MB` });
-      setState("selected");
-      setErrorMessage(null);
+      selectFile(f);
     }
   }, []);
 
   /* Upload handler calling backend API */
   async function handleSend() {
+    if (!rawFile) {
+      setErrorMessage("Vui lòng chọn hoặc kéo thả tệp video từ máy tính của bạn trước khi gửi.");
+      return;
+    }
+
     setState("uploading");
     setUploadPct(0);
     setErrorMessage(null);
@@ -80,46 +101,35 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
     const scenario = toScenario(context);
     const title = file.name ? file.name.replace(/\.[^/.]+$/, "") : "Bài thuyết trình";
 
-    if (rawFile) {
-      try {
-        const res = await presentationService.uploadVideo(
-          rawFile,
-          title,
-          scenario,
-          (pct) => setUploadPct(pct)
-        );
-        setState("done");
-        setTimeout(() => onAnalyze(res.id), 600);
-        return;
-      } catch (err: any) {
-        console.warn("[UploadPage] Backend upload error, using fallback simulation:", err);
-        if (err.status && err.status >= 400 && err.status < 500) {
-          setState("selected");
-          setErrorMessage(err.message || "Không thể tải lên file này.");
-          return;
-        }
-      }
+    try {
+      const res = await presentationService.uploadVideo(
+        rawFile,
+        title,
+        scenario,
+        (pct) => setUploadPct(pct)
+      );
+      setState("done");
+      setTimeout(() => onAnalyze(res.id), 600);
+    } catch (err: any) {
+      console.warn("[UploadPage] Lỗi tải lên video:", err);
+      setState("selected");
+      setErrorMessage(err.message || "Không thể tải lên file video này. Vui lòng thử lại.");
     }
-
-    // Fallback simulation (for mock preset or when backend is unreachable)
-    let pct = 0;
-    const id = setInterval(() => {
-      pct += Math.floor(Math.random() * 8 + 4);
-      if (pct >= 100) {
-        pct = 100;
-        clearInterval(id);
-        setState("done");
-        setTimeout(() => onAnalyze(), 800);
-      }
-      setUploadPct(pct);
-    }, 150);
   }
 
   function handleRemove() {
+    if (previewUrl && previewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setRawFile(null);
+    setPreviewUrl(null);
+    setFile({ name: "", size: "" });
     setState("idle");
     setUploadPct(0);
     setErrorMessage(null);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
   }
 
   const isUploading = state === "uploading";
@@ -142,9 +152,9 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
           {/* Clean Step Indicator */}
           <div className="hidden sm:flex items-center gap-2.5">
             {[
-              { n: 1, label: "Tải lên", done: state !== "idle" },
-              { n: 2, label: "Phân tích", done: isDone },
-              { n: 3, label: "Báo cáo", done: false },
+              { n: 1, label: "Tải lên & Xem lại", done: state !== "idle" },
+              { n: 2, label: "Phân tích AI", done: isDone },
+              { n: 3, label: "Báo cáo chi tiết", done: false },
             ].map(({ n, label, done }, i) => (
               <div key={n} className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5">
@@ -201,7 +211,7 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
                   <option>Phỏng vấn việc làm</option>
                   <option>Hội thảo</option>
                   <option>Thuyết trình lớp học</option>
-                  <option>Thuyết phục khách hàng</option>
+                  <option>Thuyết phục khách hàng (Pitching)</option>
                 </select>
               </div>
 
@@ -214,22 +224,12 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
             <input
               ref={inputRef}
               type="file"
-              accept=".mp4,.webm"
+              accept=".mp4,.webm,.avi,.mov"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) {
-                  if (f.size > 100 * 1024 * 1024) {
-                    setErrorMessage("Dung lượng file vượt quá giới hạn cho phép (tối đa 100MB). Vui lòng chọn hoặc nén video nhỏ hơn.");
-                    return;
-                  }
-                  setRawFile(f);
-                  setFile({
-                    name: f.name,
-                    size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
-                  });
-                  setState("selected");
-                  setErrorMessage(null);
+                  selectFile(f);
                 }
               }}
             />
@@ -241,106 +241,75 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
               </div>
             )}
 
-            {/* Drop Zone Area */}
-            <div
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-              onClick={() => state === "idle" && inputRef.current?.click()}
-              className={`rounded-xl border-2 border-dashed p-8 text-center transition-all ${
-                dragging
-                  ? "border-[#276749] bg-[#E8F1EB]/50"
-                  : state !== "idle"
-                  ? "border-[#DCE5DF] bg-white"
-                  : "border-[#DCE5DF] bg-[#F5F7F6]/60 hover:bg-[#F5F7F6] hover:border-[#69766F] cursor-pointer"
-              }`}
-            >
-              <div className="flex flex-col items-center justify-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#E8F1EB] border border-[#D4E5D9] flex items-center justify-center text-[#276749]">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-[14px] font-semibold text-[#24312B]">
-                    {dragging
-                      ? "Thả tệp video vào đây"
-                      : "Kéo thả video vào đây, hoặc "}
-                    {!dragging && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          inputRef.current?.click();
-                        }}
-                        className="text-[#276749] font-semibold hover:underline"
-                      >
-                        chọn tệp từ máy
-                      </button>
-                    )}
-                  </p>
-                  <p className="text-[12px] text-[#69766F]">
-                    Định dạng hỗ trợ: MP4, WebM · Tối đa 100 MB
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* File Selected Card */}
-            {(state === "selected" || isUploading || isDone) && (
-              <Card className="p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#E8F1EB] text-[#276749] flex items-center justify-center flex-shrink-0">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <rect
-                        x="2"
-                        y="4"
-                        width="15"
-                        height="16"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
+            {/* Drop Zone Area (khi chưa chọn file) */}
+            {state === "idle" && (
+              <div
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                onClick={() => inputRef.current?.click()}
+                className={`rounded-2xl border-2 border-dashed p-10 text-center transition-all ${
+                  dragging
+                    ? "border-[#276749] bg-[#E8F1EB]/50 scale-[1.01]"
+                    : "border-[#DCE5DF] bg-white hover:bg-[#F5F7F6]/80 hover:border-[#276749] cursor-pointer shadow-sm"
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center gap-3.5">
+                  <div className="w-14 h-14 rounded-2xl bg-[#E8F1EB] border border-[#D4E5D9] flex items-center justify-center text-[#276749] shadow-sm">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                       <path
-                        d="M17 9.5l5-3v11l-5-3v-5z"
+                        d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                         stroke="currentColor"
                         strokeWidth="2"
+                        strokeLinecap="round"
                         strokeLinejoin="round"
                       />
                     </svg>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-[#24312B] truncate font-mono">
-                      {file.name}
+                  <div className="space-y-1.5">
+                    <p className="text-[15px] font-bold text-[#24312B]">
+                      {dragging ? "Thả tệp video vào đây" : "Kéo thả video vào đây, hoặc bấm để duyệt tệp"}
                     </p>
-                    <div className="flex items-center gap-2 text-[12px] text-[#69766F] mt-0.5">
-                      <span>{file.size}</span>
-                      {file.duration && (
-                        <>
-                          <span>·</span>
-                          <span>{file.duration}</span>
-                        </>
-                      )}
-                    </div>
+                    <p className="text-[12.5px] text-[#69766F]">
+                      Hỗ trợ định dạng MP4, WebM, AVI, MOV · Dung lượng tối đa 100 MB
+                    </p>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        inputRef.current?.click();
+                      }}
+                      className="px-5 py-2.5 rounded-full bg-[#276749] text-white text-[13px] font-semibold hover:bg-[#1f533a] transition-all shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      Chọn tệp video từ máy tính
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Video Preview & File Details Player (Khi đã chọn video) */}
+            {(state === "selected" || isUploading || isDone) && (
+              <Card className="p-4 sm:p-5 space-y-4 shadow-sm border border-[#DCE5DF]">
+                <div className="flex items-center justify-between border-b border-[#DCE5DF] pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#276749] animate-pulse" />
+                    <span className="text-[13px] font-bold text-[#24312B] uppercase tracking-wider">
+                      Xem lại video vừa chọn
+                    </span>
                   </div>
 
                   {state === "selected" && (
                     <button
                       type="button"
                       onClick={handleRemove}
-                      className="p-1.5 rounded-lg text-[#69766F] hover:text-[#C24141] hover:bg-[#F5F7F6] transition-colors"
-                      title="Gỡ bỏ tệp"
-                      aria-label="Gỡ bỏ tệp"
+                      className="text-[12px] font-medium text-[#C24141] hover:underline flex items-center gap-1 cursor-pointer"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                         <path
                           d="M18 6L6 18M6 6l12 12"
                           stroke="currentColor"
@@ -349,7 +318,51 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
                           strokeLinejoin="round"
                         />
                       </svg>
+                      <span>Chọn tệp khác</span>
                     </button>
+                  )}
+                </div>
+
+                {/* Khung trình chiếu xem lại video thật (16:9) */}
+                {previewUrl && (
+                  <div
+                    className="rounded-xl overflow-hidden bg-black border border-[#DCE5DF] relative group shadow-inner"
+                    style={{ aspectRatio: "16/9" }}
+                  >
+                    <video
+                      ref={previewVideoRef}
+                      src={previewUrl}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-contain"
+                      onLoadedMetadata={(e) => {
+                        const d = e.currentTarget.duration;
+                        if (d && !isNaN(d) && isFinite(d)) {
+                          const m = Math.floor(d / 60);
+                          const s = Math.floor(d % 60);
+                          setFile((prev) => ({
+                            ...prev,
+                            duration: `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
+                          }));
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* File Meta Info */}
+                <div className="flex items-center justify-between text-[12.5px] bg-[#F5F7F6] p-3 rounded-lg border border-[#DCE5DF]">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="font-semibold text-[#24312B] truncate font-mono">
+                      {file.name}
+                    </span>
+                    <span className="text-[#69766F]">({file.size})</span>
+                  </div>
+                  {file.duration && (
+                    <span className="text-[#276749] font-semibold font-mono flex-shrink-0 bg-white px-2 py-0.5 rounded border border-[#DCE5DF]">
+                      Thời lượng: {file.duration}
+                    </span>
                   )}
                 </div>
 
@@ -357,20 +370,12 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
                 {(isUploading || isDone) && (
                   <div className="space-y-1.5 pt-1">
                     <div className="flex justify-between text-[12px] font-medium">
-                      <span
-                        className={
-                          isDone
-                            ? "text-[#276749] font-semibold"
-                            : "text-[#24312B]"
-                        }
-                      >
-                        {isDone
-                          ? "Tải lên hoàn tất!"
-                          : `Đang tải lên... ${uploadPct}%`}
+                      <span className={isDone ? "text-[#276749] font-semibold" : "text-[#24312B]"}>
+                        {isDone ? "Tải lên máy chủ thành công!" : `Đang tải video lên hệ thống... ${uploadPct}%`}
                       </span>
                       <span className="text-[#69766F] font-mono">{uploadPct}%</span>
                     </div>
-                    <div className="h-1.5 bg-[#DCE5DF] rounded-full overflow-hidden">
+                    <div className="h-2 bg-[#DCE5DF] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[#276749] rounded-full transition-all duration-200"
                         style={{ width: `${uploadPct}%` }}
@@ -378,26 +383,26 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
                     </div>
                   </div>
                 )}
+
+                {/* Action Button */}
+                {state === "selected" && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full justify-center text-[14px] font-semibold py-3"
+                    onClick={handleSend}
+                  >
+                    Gửi để phân tích AI
+                  </Button>
+                )}
+
+                {isDone && (
+                  <div className="flex items-center justify-center gap-2.5 bg-[#E8F1EB] border border-[#D4E5D9] rounded-xl p-3.5 text-[13px] text-[#276749] font-medium">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#276749] animate-pulse" />
+                    Đang chuyển hướng sang tiến trình phân tích AI đa phương thức...
+                  </div>
+                )}
               </Card>
-            )}
-
-            {/* Action Button */}
-            {state === "selected" && (
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full justify-center"
-                onClick={handleSend}
-              >
-                Gửi để phân tích
-              </Button>
-            )}
-
-            {isDone && (
-              <div className="flex items-center gap-2.5 bg-[#E8F1EB] border border-[#D4E5D9] rounded-xl p-3.5 text-[12.5px] text-[#276749] font-medium">
-                <span className="w-2 h-2 rounded-full bg-[#276749] animate-pulse" />
-                Đang chuyển đến phân tích AI đa phương thức...
-              </div>
             )}
 
             {/* Video Recording & Upload Tips Grid */}
@@ -405,7 +410,7 @@ export default function UploadPage({ onNav, onAnalyze, userRole }: UploadPagePro
               {UPLOAD_TIPS.map((tip, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-xl border border-[#DCE5DF] p-3.5 flex items-start gap-2.5"
+                  className="bg-white rounded-xl border border-[#DCE5DF] p-3.5 flex items-start gap-2.5 shadow-xs"
                 >
                   <div className="w-5 h-5 rounded-md bg-[#E8F1EB] text-[#276749] flex items-center justify-center flex-shrink-0 text-[11px] font-bold mt-0.5">
                     ✓

@@ -61,6 +61,7 @@ export interface AnalysisReportResponse {
     [key: string]: unknown;
   };
   ai_feedback: AIFeedback;
+  duration_sec?: number;
   created_at: string;
 }
 
