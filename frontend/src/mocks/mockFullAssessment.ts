@@ -1,5 +1,5 @@
 import fullAssessmentJson from "../../../data_return_for_frontend/full_assessment_sample.json";
-import { FullAssessmentData } from "../types/assessment";
+import { FullAssessmentData, TelemetryPoint, ViolationCluster } from "../types/assessment";
 import { DetailedSessionReport } from "./mockHistory";
 
 export const FULL_ASSESSMENT_DATA = fullAssessmentJson as FullAssessmentData;
@@ -11,6 +11,93 @@ export function formatSecondsToTime(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+/**
+ * Thuật toán gom cụm các mốc vi phạm liền kề (Clustering Algorithm)
+ * Nhóm các mẫu telemetry vi phạm trong khoảng thời gian <= maxGapSec thành 1 cụm sự kiện cảnh báo.
+ */
+export function clusterViolations(
+  telemetry: TelemetryPoint[],
+  totalDuration: number,
+  maxGapSec: number = 8
+): ViolationCluster[] {
+  const violations = telemetry.filter((t) => t.is_violation);
+  if (violations.length === 0) return [];
+
+  const clustersRaw: TelemetryPoint[][] = [];
+  let currentCluster: TelemetryPoint[] = [violations[0]];
+
+  for (let i = 1; i < violations.length; i++) {
+    const prev = currentCluster[currentCluster.length - 1];
+    const curr = violations[i];
+
+    if (curr.timestamp_sec - prev.timestamp_sec <= maxGapSec) {
+      currentCluster.push(curr);
+    } else {
+      clustersRaw.push(currentCluster);
+      currentCluster = [curr];
+    }
+  }
+  if (currentCluster.length > 0) {
+    clustersRaw.push(currentCluster);
+  }
+
+  return clustersRaw.map((group, index) => {
+    const startSec = group[0].timestamp_sec;
+    const endSec = group[group.length - 1].timestamp_sec;
+    const durationSec = Math.max(1, Math.round(endSec - startSec));
+    const startPct = Math.min(100, Math.max(0, (startSec / totalDuration) * 100));
+    const endPct = Math.min(100, Math.max(0, (endSec / totalDuration) * 100));
+    const widthPct = Math.max(1.8, endPct - startPct);
+
+    // Xác định mức độ nghiêm trọng
+    const hasBoth = group.some(
+      (p) =>
+        p.violation_type?.includes("Lệch tư thế đầu") &&
+        p.violation_type?.includes("Mất tương tác")
+    );
+    const count = group.length;
+    const isCritical = hasBoth || count >= 3;
+
+    // Xác định tên lỗi tiêu biểu
+    const hasHead = group.some((p) => p.violation_type?.includes("Lệch tư thế đầu"));
+    const hasEye = group.some((p) => p.violation_type?.includes("Mất tương tác ánh mắt"));
+    let primaryType = "Vi phạm quy chuẩn";
+    if (hasHead && hasEye) {
+      primaryType = "Lệch tư thế đầu & Mất tương tác ánh mắt";
+    } else if (hasHead) {
+      primaryType = "Lệch tư thế đầu (vượt ngưỡng 15°)";
+    } else if (hasEye) {
+      primaryType = "Mất giao tiếp ánh mắt với camera";
+    }
+
+    const timeRangeFormatted =
+      startSec === endSec
+        ? formatSecondsToTime(startSec)
+        : `${formatSecondsToTime(startSec)} – ${formatSecondsToTime(endSec)} (${durationSec}s)`;
+
+    return {
+      id: `cluster-${index + 1}`,
+      startSec,
+      endSec,
+      durationSec,
+      startPct,
+      endPct,
+      widthPct,
+      count,
+      primaryType,
+      severity: isCritical ? "Cần lưu ý" : "Nhẹ",
+      color: isCritical ? "#C24141" : "#B7791F",
+      symbol: isCritical ? "⚠️" : "⚡",
+      timeRangeFormatted,
+      samples: group.map((p) => ({
+        timestampSec: p.timestamp_sec,
+        violationType: p.violation_type || "",
+        headPose: p.head_pose,
+      })),
+    };
+  });
 }
 
 /**
@@ -93,6 +180,7 @@ export function adaptFullAssessmentToReport(
       fillerWords: 3,
     },
     timelineMarkers,
+    violationClusters: clusterViolations(aiData.telemetry_timeseries, aiData.duration_sec),
     transcript:
       "Kính thưa quý thầy cô trong Hội đồng phản biện, hôm nay nhóm chúng em xin được trình bày về đề tài 'Hệ thống huấn luyện thuyết trình đa phương thức ứng dụng Trí tuệ nhân tạo'. Trong suốt thời gian thực hiện đồ án, nhóm đã áp dụng các mô hình học sâu để phân tích thị giác, cử chỉ và giọng nói nhằm cung cấp phản hồi tức thời...",
     strengths: {

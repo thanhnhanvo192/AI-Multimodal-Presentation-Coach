@@ -155,6 +155,9 @@ export default function HistoryPage({
                               {s.title}
                             </p>
                             <Badge variant="neutral">{s.context}</Badge>
+                            {String(s.id) === "DA_001" && (
+                              <Badge variant="primary">AI Core Chuẩn</Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 text-[11.5px] text-[#69766F] mt-1 flex-wrap">
                             <span>{s.date}</span>

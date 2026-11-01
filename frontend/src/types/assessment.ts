@@ -41,6 +41,27 @@ export interface ActionPlanItem {
   exercise: string;
 }
 
+export interface ViolationCluster {
+  id: string;
+  startSec: number;
+  endSec: number;
+  durationSec: number;
+  startPct: number;
+  endPct: number;
+  widthPct: number;
+  count: number;
+  primaryType: string;
+  severity: "Cần lưu ý" | "Nhẹ";
+  color: string;
+  symbol: string;
+  timeRangeFormatted: string;
+  samples: Array<{
+    timestampSec: number;
+    violationType: string;
+    headPose: HeadPose;
+  }>;
+}
+
 export interface XAIReport {
   ai_coach_persona: string;
   summary_feedback: string;

@@ -1,5 +1,5 @@
 import { PresentationSession, WeeklyScoreTrend } from "../types";
-import { FullAssessmentData, RubricScores, ActionPlanItem } from "../types/assessment";
+import { FullAssessmentData, RubricScores, ActionPlanItem, ViolationCluster } from "../types/assessment";
 import { adaptFullAssessmentToReport, FULL_ASSESSMENT_DATA } from "./mockFullAssessment";
 
 export interface DetailedSessionReport {
@@ -45,6 +45,7 @@ export interface DetailedSessionReport {
     timestampSec?: number;
     timeFormatted?: string;
   }>;
+  violationClusters?: ViolationCluster[];
   transcript: string;
   strengths: {
     title: string;
