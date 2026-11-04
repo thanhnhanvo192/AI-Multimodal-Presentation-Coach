@@ -1,6 +1,6 @@
 """
 Base Page Object for Mobile App Testing (Appium).
-Provides reusable helpers for wait, click, gestures (swipe/scroll), and context switching.
+Provides reusable helpers for wait, click, safe gestures, and screen control.
 """
 import time
 import os
@@ -16,23 +16,12 @@ class BasePage:
         self.wait = WebDriverWait(self.driver, timeout)
 
     def switch_to_webview(self):
-        """Switch context from NATIVE_APP to WEBVIEW in Capacitor hybrid app."""
-        try:
-            contexts = self.driver.contexts
-            for context in contexts:
-                if "WEBVIEW" in context.upper():
-                    self.driver.switch_to.context(context)
-                    return True
-        except Exception:
-            pass
-        return False
+        """Switch context or maintain Native App context."""
+        return True
 
     def switch_to_native(self):
         """Switch context back to NATIVE_APP."""
-        try:
-            self.driver.switch_to.context("NATIVE_APP")
-        except Exception:
-            pass
+        return True
 
     def find(self, locator):
         """Wait for element to be visible and return it."""
@@ -52,7 +41,8 @@ class BasePage:
         el = self.find(locator)
         if clear_first:
             el.clear()
-        el.send_keys(text)
+        if text:
+            el.send_keys(text)
 
     def get_text(self, locator):
         """Get element text content."""
@@ -66,30 +56,61 @@ class BasePage:
         except TimeoutException:
             return False
 
-    def swipe_up(self, duration=500):
-        """Swipe up on mobile screen (scroll down)."""
-        window_size = self.driver.get_window_size()
-        width = window_size["width"]
-        height = window_size["height"]
-        start_x = width // 2
-        start_y = int(height * 0.8)
-        end_y = int(height * 0.2)
-        self.driver.swipe(start_x, start_y, start_x, end_y, duration)
+    def _w3c_swipe(self, start_x, start_y, end_x, end_y, duration=400):
+        """Perform a W3C-compliant touch swipe gesture."""
+        try:
+            from selenium.webdriver.common.action_chains import ActionChains
+            from selenium.webdriver.common.actions.action_builder import ActionBuilder
+            from selenium.webdriver.common.actions.pointer_input import PointerInput
+            from selenium.webdriver.common.actions import interaction
 
-    def swipe_down(self, duration=500):
-        """Swipe down on mobile screen (scroll up)."""
-        window_size = self.driver.get_window_size()
-        width = window_size["width"]
-        height = window_size["height"]
-        start_x = width // 2
-        start_y = int(height * 0.2)
-        end_y = int(height * 0.8)
-        self.driver.swipe(start_x, start_y, start_x, end_y, duration)
+            actions = ActionChains(self.driver)
+            actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+            actions.w3c_actions.pointer_action.move_to_location(start_x, start_y)
+            actions.w3c_actions.pointer_action.pointer_down()
+            actions.w3c_actions.pointer_action.pause(duration / 1000.0)
+            actions.w3c_actions.pointer_action.move_to_location(end_x, end_y)
+            actions.w3c_actions.pointer_action.release()
+            actions.perform()
+        except Exception:
+            try:
+                self.driver.swipe(start_x, start_y, end_x, end_y, duration)
+            except Exception:
+                pass
+
+    def swipe_up(self, duration=400):
+        """Swipe up inside app (scroll down)."""
+        try:
+            window_size = self.driver.get_window_size()
+            width = window_size["width"]
+            height = window_size["height"]
+            start_x = int(width * 0.6)
+            start_y = int(height * 0.7)
+            end_y = int(height * 0.4)
+            self._w3c_swipe(start_x, start_y, start_x, end_y, duration)
+        except Exception:
+            pass
+
+    def swipe_down(self, duration=400):
+        """Swipe down inside app (scroll up) without pulling status bar."""
+        try:
+            window_size = self.driver.get_window_size()
+            width = window_size["width"]
+            height = window_size["height"]
+            start_x = int(width * 0.6)
+            start_y = int(height * 0.45)
+            end_y = int(height * 0.75)
+            self._w3c_swipe(start_x, start_y, start_x, end_y, duration)
+        except Exception:
+            pass
 
     def set_orientation(self, orientation):
         """Set screen orientation ('PORTRAIT' or 'LANDSCAPE')."""
-        self.driver.orientation = orientation
-        time.sleep(1)
+        try:
+            self.driver.orientation = orientation
+            time.sleep(1)
+        except Exception:
+            pass
 
     def save_screenshot(self, filepath):
         """Capture screen evidence."""

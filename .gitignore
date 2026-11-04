@@ -99,3 +99,10 @@ data/processed/audio_16k/**
 data/public_datasets/**
 !data/raw/DUT-PresCorpus/**/.gitkeep
 !data/processed/audio_16k/**/.gitkeep
+
+# Mobile Test Reports, Videos, Screenshots and Android APKs
+reports/
+*.apk
+*.mp4
+*.png
+*.xml

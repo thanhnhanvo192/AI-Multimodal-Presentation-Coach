@@ -13,7 +13,6 @@ def get_apk_path():
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     apk_path = os.path.join(base_dir, "AI_Presentation_Coach.apk")
     if not os.path.exists(apk_path):
-        # Alternative build location
         apk_path = os.path.join(base_dir, "frontend", "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk")
     return apk_path
 
@@ -30,55 +29,50 @@ def appium_driver(appium_server_url, request):
     Initializes the Appium WebDriver for each test.
     Automatically starts and stops screen recording for evidence.
     """
-    apk_path = get_apk_path()
-    
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
-    options.device_name = os.getenv("ANDROID_DEVICE_NAME", "Android Emulator")
-    options.app = apk_path
+    device_name = os.getenv("ANDROID_DEVICE_NAME", "emulator-5554")
+    options.device_name = device_name
+    options.udid = os.getenv("ANDROID_DEVICE_UDID", device_name)
+    options.app_package = "com.aicoach.presentation"
+    options.app_activity = "com.aicoach.presentation.MainActivity"
+    options.no_reset = True
     options.auto_grant_permissions = True
     options.set_capability("newCommandTimeout", 300)
-    options.set_capability("chromedriverAutodownload", True)
-    
+    options.set_capability("adbExecTimeout", 30000)
+    options.set_capability("ignoreHiddenApiPolicyError", True)
+    options.set_capability("skipLogcatCapture", True)
+    options.set_capability("disableWindowAnimation", True)
+
     driver = None
     try:
         driver = webdriver.Remote(appium_server_url, options=options)
-        try:
-            driver.start_recording_screen()
-        except Exception:
-            pass  # Some emulators or devices might have recording disabled
     except Exception as e:
         pytest.skip(f"Appium Server or Android Device not available at {appium_server_url}: {e}")
 
     yield driver
 
     if driver:
-        # Save screenshot if test failed
-        test_failed = hasattr(request.node, "rep_call") and request.node.rep_call.failed
-        screenshot_dir = os.path.join(os.path.dirname(__file__), "..", "..", "reports", "screenshots")
-        os.makedirs(screenshot_dir, exist_ok=True)
-        
-        if test_failed:
-            screenshot_path = os.path.join(screenshot_dir, f"{request.node.name}_FAILED.png")
-            try:
-                driver.save_screenshot(screenshot_path)
-            except Exception:
-                pass
-                
-        # Stop and save video recording
-        try:
-            raw_video = driver.stop_recording_screen()
-            video_dir = os.path.join(os.path.dirname(__file__), "..", "..", "reports", "videos")
-            os.makedirs(video_dir, exist_ok=True)
-            import base64
-            video_path = os.path.join(video_dir, f"{request.node.name}.mp4")
-            with open(video_path, "wb") as f:
-                f.write(base64.b64decode(raw_video))
-        except Exception:
-            pass
-
         driver.quit()
+
+
+@pytest.fixture(scope="function")
+def login_page(appium_driver):
+    """Fixture ensuring the app is at the Login screen."""
+    from pages.login_page import LoginPage
+    page = LoginPage(appium_driver)
+    page.ensure_on_login()
+    return page
+
+
+@pytest.fixture(scope="function")
+def signup_page(appium_driver):
+    """Fixture ensuring the app is at the Sign Up screen."""
+    from pages.signup_page import SignUpPage
+    page = SignUpPage(appium_driver)
+    page.ensure_on_signup()
+    return page
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

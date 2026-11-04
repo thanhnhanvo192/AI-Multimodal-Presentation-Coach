@@ -3,7 +3,28 @@
  * Configured to connect with Backend API (FastAPI / Nginx Reverse Proxy)
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+import { Capacitor } from "@capacitor/core";
+
+/**
+ * Base API Client configuration for AI Multimodal Presentation Coach
+ * Automatically points to 10.0.2.2 on Android Emulator to connect to PC host Docker/FastAPI
+ */
+function resolveBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    const customUrl = localStorage.getItem("custom_api_base_url");
+    if (customUrl) return customUrl;
+  }
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // If running inside native Android (Capacitor), host machine is reachable via 10.0.2.2
+  if (Capacitor.isNativePlatform() || Capacitor.getPlatform() === "android") {
+    return "http://10.0.2.2:8000/api/v1";
+  }
+  return "http://localhost:8000/api/v1";
+}
+
+export const API_BASE_URL = resolveBaseUrl();
 
 export class ApiError extends Error {
   status: number;
