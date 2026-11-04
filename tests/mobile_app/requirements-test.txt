@@ -1,0 +1,5 @@
+# Testing dependencies for Mobile App Automation (PBL6 / KTPM)
+Appium-Python-Client>=4.0.0
+pytest>=8.0.0
+pytest-html>=4.0.0
+selenium>=4.20.0

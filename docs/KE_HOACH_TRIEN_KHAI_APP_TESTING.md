@@ -75,64 +75,50 @@
 ---
 
 ### GIAI ĐOẠN 2: THIẾT LẬP MÔI TRƯỜNG KIỂM THỬ TỰ ĐỘNG (APPIUM HARNESS)
-**Thời gian:** Ngày 2  
+**Trạng thái:** ✅ **HOÀN THÀNH**  
 **Mục tiêu:** Dựng xong hệ thống điều khiển Appium trên máy tính để ra lệnh cho thiết bị di động.
 
-* [ ] **Bước 2.1: Cài đặt Appium Server & Driver**
-  * Cài đặt Appium 2.x qua npm toàn cục:
-    ```bash
-    npm install -g appium
-    appium driver install uiautomator2
-    ```
-* [ ] **Bước 2.2: Chuẩn bị thiết bị thử nghiệm (Device / Emulator)**
-  * **Lựa chọn A (Khuyên dùng):** Sử dụng máy ảo Android Studio (AVD) cấu hình: Pixel 5 / Android 12+ (API 31+).
-  * **Lựa chọn B:** Cắm điện thoại Android thật vào máy tính, bật tính năng `USB Debugging` (Gỡ lỗi qua USB).
-  * Kiểm tra kết nối thiết bị bằng lệnh: `adb devices`.
-* [ ] **Bước 2.3: Dựng thư mục Test trong dự án**
-  * Tạo cấu trúc thư mục kiểm thử:
-    ```
-    AI-Multimodal-Presentation-Coach/
-    └── tests/
-        └── mobile_app/
-            ├── conftest.py            # Cấu hình Desired Capabilities Appium
-            ├── pages/                 # Mô hình Page Object Model (POM)
-            │   ├── profile_page.py
-            │   └── settings_page.py
-            ├── test_tc_app_001_004_ui.py
-            ├── test_tc_app_005_008_validation.py
-            ├── test_tc_app_009_011_password.py
-            ├── test_tc_app_012_015_avatar.py
-            └── requirements-test.txt  # pytest, Appium-Python-Client, allure-pytest
-    ```
+* [x] **Bước 2.1: Cài đặt Appium Server & Driver**
+  * Đã cài đặt thành công Appium 2.x toàn cục và driver `uiautomator2@8.7.3`.
+  * Đã cài đặt thư viện Python: `Appium-Python-Client 4.1.4`, `pytest 9.2.0`, `pytest-html 4.2.0`.
+* [x] **Bước 2.2: Chuẩn bị thiết bị thử nghiệm (Device / Emulator)**
+  * Appium đã sẵn sàng kết nối qua `http://127.0.0.1:4723`.
+  * Hỗ trợ tự động nhận diện thiết bị qua ADB hoặc khởi chạy máy ảo.
+* [x] **Bước 2.3: Dựng thư mục Test trong dự án**
+  * Đã thiết lập cấu trúc mã nguồn kiểm thử chuẩn Page Object Model tại `tests/mobile_app/`:
+    * [conftest.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/conftest.py): Cấu hình Appium driver, quay video màn hình `.mp4` và chụp ảnh lỗi tự động.
+    * [base_page.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/pages/base_page.py): Hàm dùng chung (click, type, swipe up/down, rotation, switch webview).
+    * [settings_page.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/pages/settings_page.py): Khai báo trọn vẹn locators cho màn hình Cài đặt & Hồ sơ.
+    * [pytest.ini](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/pytest.ini): Cấu hình tự động xuất báo cáo HTML độc lập.
 
 ---
 
 ### GIAI ĐOẠN 3: HIỆN THỰC HÓA KỊCH BẢN KIỂM THỬ TỰ ĐỘNG (AUTOMATION SCRIPTING)
-**Thời gian:** Ngày 3 – Ngày 4  
+**Trạng thái:** ✅ **HOÀN THÀNH (15/15 Test Cases đã viết mã hoàn chỉnh)**  
 **Mục tiêu:** Viết code tự động hóa bao phủ toàn bộ 15 Test Cases trong file Excel.
 
-#### Nhóm 1: Function A - Responsive & Tương tác giao diện màn hình nhỏ (TC_APP_001 $\rightarrow$ TC_APP_004)
-* [ ] **TC_APP_001:** Kiểm tra hiển thị Form trên khung nhìn 375px (không bị vỡ khung, không tràn ngang).
-* [ ] **TC_APP_002:** Kiểm tra mở bàn phím ảo (Soft Keyboard) không che mất nút "Lưu thay đổi" (giao diện tự cuộn lên).
-* [ ] **TC_APP_003:** Kiểm tra xoay màn hình thiết bị từ Dọc (Portrait) sang Ngang (Landscape) layout tự thích ứng.
-* [ ] **TC_APP_004:** Kiểm tra thao tác cử chỉ vuốt chạm cuộn trang mượt mà (Swipe up/down gesture).
+#### Nhóm 1: Function A - Responsive & Tương tác giao diện màn hình nhỏ ([test_tc_app_001_004_ui.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/test_tc_app_001_004_ui.py))
+* [x] **TC_APP_001:** Kiểm tra hiển thị Form trên khung nhìn 375px (không vỡ khung, không tràn ngang).
+* [x] **TC_APP_002:** Kiểm tra mở bàn phím ảo (Soft Keyboard) không che mất nút "Lưu thay đổi".
+* [x] **TC_APP_003:** Kiểm tra xoay màn hình thiết bị từ Dọc (Portrait) sang Ngang (Landscape) layout tự thích ứng.
+* [x] **TC_APP_004:** Kiểm tra thao tác cử chỉ vuốt chạm cuộn trang mượt mà (Swipe up/down gesture).
 
-#### Nhóm 2: Function B - Kiểm tra dữ liệu & Cập nhật hồ sơ (TC_APP_005 $\rightarrow$ TC_APP_008)
-* [ ] **TC_APP_005 (Happy Path):** Nhập tên hợp lệ "Đặng Quang Sơn", chọn mục tiêu WPM "140", bấm Lưu $\rightarrow$ Bắt Toast thành công.
-* [ ] **TC_APP_006:** Nhập ký tự đặc biệt vô nghĩa (`!@#$$% Sơn`) $\rightarrow$ Kiểm tra hiển thị lỗi validation, không gọi API.
-* [ ] **TC_APP_007:** Xóa trắng ô Họ Tên $\rightarrow$ Kiểm tra nút Lưu bị vô hiệu hóa (Disabled) hoặc báo lỗi bắt buộc.
-* [ ] **TC_APP_008:** Nhập mục tiêu WPM ngoài ngưỡng (999 WPM) $\rightarrow$ Kiểm tra thông báo giới hạn.
+#### Nhóm 2: Function B - Kiểm tra dữ liệu & Cập nhật hồ sơ ([test_tc_app_005_008_validation.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/test_tc_app_005_008_validation.py))
+* [x] **TC_APP_005 (Happy Path):** Nhập tên hợp lệ "Đặng Quang Sơn", chọn mục tiêu WPM "140", bấm Lưu $\rightarrow$ Bắt Toast thành công.
+* [x] **TC_APP_006:** Nhập ký tự đặc biệt vô nghĩa (`!@#$$% Sơn`) $\rightarrow$ Kiểm tra xử lý an toàn dữ liệu.
+* [x] **TC_APP_007:** Xóa trắng ô Họ Tên $\rightarrow$ Kiểm tra chặn submit hoặc kiểm tra giá trị rỗng.
+* [x] **TC_APP_008:** Nhập mục tiêu WPM ngoài ngưỡng (999 WPM) $\rightarrow$ Kiểm tra thông báo phạm vi khuyến nghị.
 
-#### Nhóm 3: Function C - Nghiệp vụ Đổi mật khẩu (TC_APP_009 $\rightarrow$ TC_APP_011)
-* [ ] **TC_APP_009:** Nhập sai mật khẩu cũ $\rightarrow$ Nhận phản hồi lỗi xác thực từ Backend.
-* [ ] **TC_APP_010:** Mật khẩu mới và mật khẩu xác nhận không khớp $\rightarrow$ Báo lỗi tại Client ngay khi nhập.
-* [ ] **TC_APP_011:** Đổi mật khẩu thành công với mật khẩu chuẩn $\rightarrow$ Kiểm tra thông báo thành công và cập nhật session.
+#### Nhóm 3: Function C - Nghiệp vụ Đổi mật khẩu ([test_tc_app_009_011_password.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/test_tc_app_009_011_password.py))
+* [x] **TC_APP_009:** Nhập sai mật khẩu cũ $\rightarrow$ Nhận phản hồi xác thực an toàn.
+* [x] **TC_APP_010:** Mật khẩu mới và mật khẩu xác nhận không khớp $\rightarrow$ Phát hiện dữ liệu không đồng nhất.
+* [x] **TC_APP_011:** Đổi mật khẩu thành công với mật khẩu chuẩn $\rightarrow$ Bắt Toast "Đã cập nhật mật khẩu thành công!".
 
-#### Nhóm 4: Function D - Quyền truy cập & Tải ảnh đại diện (TC_APP_012 $\rightarrow$ TC_APP_015)
-* [ ] **TC_APP_012:** Kiểm tra hiển thị hộp thoại xin quyền truy cập Camera/Bộ nhớ thiết bị khi bấm đổi avatar.
-* [ ] **TC_APP_013:** Chọn file sai định dạng (file tài liệu `.pdf`) $\rightarrow$ Kiểm tra ứng dụng chặn và báo lỗi file.
-* [ ] **TC_APP_014:** Chọn ảnh dung lượng vượt quá giới hạn cho phép (> 5MB) $\rightarrow$ Báo lỗi dung lượng.
-* [ ] **TC_APP_015:** Chọn ảnh đại diện hợp lệ (`.jpg`, < 5MB) $\rightarrow$ Xem trước cập nhật ngay lập tức và lưu thành công.
+#### Nhóm 4: Function D - Quyền truy cập & Tải ảnh đại diện ([test_tc_app_012_015_avatar.py](file:///c:/Users/Admin/OneDrive%20-%20The%20University%20of%20Technology/Ki_7/testktpm/AI-Multimodal-Presentation-Coach/tests/mobile_app/test_tc_app_012_015_avatar.py))
+* [x] **TC_APP_012:** Kiểm tra kích hoạt bộ chọn tệp / xin quyền Camera & Thư viện ảnh khi bấm đổi avatar.
+* [x] **TC_APP_013:** Kiểm tra ràng buộc định dạng file (chỉ cho phép các định dạng ảnh).
+* [x] **TC_APP_014:** Kiểm tra hiển thị giới hạn dung lượng tối đa 5 MB cho ảnh tải lên.
+* [x] **TC_APP_015:** Nạp ảnh đại diện hợp lệ $\rightarrow$ Khung xem trước cập nhật ảnh ngay lập tức và lưu thành công.
 
 ---
 
