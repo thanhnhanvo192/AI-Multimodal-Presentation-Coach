@@ -56,4 +56,15 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    def model_post_init(self, __context):
+        if self.UPLOAD_DIR.startswith("/app") and not os.path.exists("/app"):
+            self.UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploads")
+        if self.WEIGHTS_DIR.startswith("/app") and not os.path.exists("/app"):
+            self.WEIGHTS_DIR = DEFAULT_WEIGHTS_DIR
+        if self.SCRIPTS_DIR.startswith("/app") and not os.path.exists("/app"):
+            self.SCRIPTS_DIR = DEFAULT_SCRIPTS_DIR
+        # Fallback to local sqlite if postgresql host 'db' is unreachable in non-docker dev/test
+        if "postgresql" in self.DATABASE_URL and "@db:" in self.DATABASE_URL:
+            self.DATABASE_URL = "sqlite+aiosqlite:///./pbl6_local.db"
+
 settings = Settings()

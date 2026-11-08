@@ -28,14 +28,15 @@ async def lifespan(app: FastAPI):
     await seed_initial_users()
 
     # Pre-warm AI Engine in worker thread to prevent latency on first request
-    def _warmup():
-        try:
-            from app.services.ai_engine_service import get_ai_engine
-            get_ai_engine()
-        except Exception as ex:
-            logger.warning(f"AI Engine warm-up skipped or deferred: {ex}")
+    if not os.environ.get('TESTING'):
+        def _warmup():
+            try:
+                from app.services.ai_engine_service import get_ai_engine
+                get_ai_engine()
+            except Exception as ex:
+                logger.warning(f"AI Engine warm-up skipped or deferred: {ex}")
 
-    asyncio.create_task(asyncio.to_thread(_warmup))
+        asyncio.create_task(asyncio.to_thread(_warmup))
 
     yield
     # Shutdown
