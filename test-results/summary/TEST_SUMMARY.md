@@ -1,6 +1,6 @@
 # BÁO CÁO TỔNG HỢP KẾT QUẢ KIỂM THỬ TỰ ĐỘNG (AUTOMATED TEST SUMMARY REPORT)
 ## ĐỀ TÀI: NỀN TẢNG ĐÁNH GIÁ KỸ NĂNG THUYẾT TRÌNH TỰ ĐỘNG (AI MULTIMODAL COACH)
-**Ngày nghiệm thu:** 08/11/2026 16:25:49
+**Ngày nghiệm thu:** 09/11/2026 07:32:36
 **Nhóm thực hiện:** Đặng Quang Sơn (QA Lead), Võ Thành Nhân (Backend), Nguyễn Đỗ Thắng (AI Lead)
 **Giảng viên hướng dẫn:** TS. Võ Đức Hoàng
 
@@ -32,14 +32,14 @@
 - Chức năng kiểm thử: *Password Hashing* & *AI Scoring, Badge Allocation*
 - Tổng số ca kiểm thử: **22**
 - Passed: **22** | Failed: **0** | Skipped: **0**
-- Thời gian thực thi: **4.64s**
+- Thời gian thực thi: **13.70s**
 - Trạng thái: **PASSED**
 
 ### 3.2. API Testing (FastAPI TestClient & HTTPX)
 - Chức năng kiểm thử: *Admin System Config* & *Admin User Status Management*
 - Tổng số ca kiểm thử: **10**
 - Passed: **10** | Failed: **0** | Skipped: **0**
-- Thời gian thực thi: **5.67s**
+- Thời gian thực thi: **15.14s**
 - Trạng thái: **PASSED**
 
 ### 3.3. Web Testing E2E (Playwright Chromium)

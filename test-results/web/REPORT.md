@@ -1,5 +1,5 @@
 # WEB TESTING (E2E PLAYWRIGHT) REPORT
-**Thời gian xuất báo cáo:** 2026-11-08 16:25:49
+**Thời gian xuất báo cáo:** 2026-11-09 07:32:36
 
 ## 1. CÁC CHỨC NĂNG NGHIỆP VỤ ĐƯỢC KIỂM THỬ
 - **User Registration Workflow on Web UI (frontend/src/SignUpPage.tsx)**

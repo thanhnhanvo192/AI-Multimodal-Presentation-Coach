@@ -1,5 +1,5 @@
 # PERFORMANCE TESTING REPORT (LOCUST LOAD TEST)
-**Thời gian xuất báo cáo:** 2026-11-08 16:25:49
+**Thời gian xuất báo cáo:** 2026-11-09 07:32:36
 
 ## 1. CÁC CHỨC NĂNG VÀ MỨC TẢI KIỂM THỬ
 - **Chức năng 7:** Student Dashboard Aggregate Analytics (`GET /api/v1/presentations/dashboard-stats`)
